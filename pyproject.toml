@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "memap"
+version = "0.1.0"
+description = "Getão mapa mensais"
+authors = ["mastervieira <javatang46@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.14"
+sqlalchemy = "^2.0.46"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
