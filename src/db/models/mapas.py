@@ -79,7 +79,8 @@ class Documento(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Documento(id={self.id}, nome='{self.nome_original}', status='{self.status_validacao}')>"
+        return f"<Documento(id={self.id}, nome='{self.nome_original}', \
+            status='{self.status_validacao}')>"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -140,13 +141,19 @@ class MapaTaxas(MapaBaseMixin, Base):
         return f"<MapaTaxas {self.mes}/{self.ano} estado={self.estado.value}>"
 
     def calcular_totais(self) -> None:
-        self.total_setubal = sum((l.setubal for l in self.linhas), Decimal(0))
+        self.total_setubal = sum(
+            (l.setubal for l in self.linhas), Decimal(0)
+        )  # noqa: E741
         self.total_santarem = sum(
-            (l.santarem for l in self.linhas), Decimal(0)
+            (l.santarem for l in self.linhas), Decimal(0)  # noqa: E741
         )
-        self.total_evora = sum((l.evora for l in self.linhas), Decimal(0))
-        self.total_ips = sum(l.ips for l in self.linhas)
-        self.total_dividas = sum((l.dividas for l in self.linhas), Decimal(0))
+        self.total_evora = sum(
+            (l.evora for l in self.linhas), Decimal(0)
+        )  # noqa: E741
+        self.total_ips = sum(l.ips for l in self.linhas)  # noqa: E741
+        self.total_dividas = sum(
+            (l.dividas for l in self.linhas), Decimal(0)
+        )  # noqa: E741
         self.total_faturacao = (
             self.total_setubal + self.total_santarem + self.total_evora
         )
@@ -194,7 +201,19 @@ class MapaAssiduidade(MapaBaseMixin, Base):
 
     __tablename__ = "mapas_assiduidade"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+
+    # Campos obrigatórios herdados de MapaBaseMixin
+    # mes: Mapped[int] = mapped_column()
+    # ano: Mapped[int] = mapped_column()
+    # estado: Mapped[EstadoDocumento] = mapped_column()
+    # versao: Mapped[int] = mapped_column(default=1)
+    # wizard_data: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    # created_at: Mapped[datetime] = mapped_column()
+    # updated_at: Mapped[datetime] = mapped_column()
+    # pdf_path: Mapped[str | None] = mapped_column(String(500))
+    # finalizado_em: Mapped[datetime | None] = mapped_column()
+    # fechado_em: Mapped[datetime | None] = mapped_column()
 
     linhas: Mapped[list["MapaAssiduidadeLinha"]] = relationship(
         back_populates="mapa",
@@ -202,13 +221,29 @@ class MapaAssiduidade(MapaBaseMixin, Base):
         order_by="MapaAssiduidadeLinha.dia",
     )
 
-    total_dias_trabalho: Mapped[int] = mapped_column(default=0)
-    total_km: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
-    total_ips: Mapped[int] = mapped_column(default=0)
-    total_faturacao: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
-    total_ausencias: Mapped[int] = mapped_column(default=0)
-    total_ferias: Mapped[int] = mapped_column(default=0)
-    total_feriados: Mapped[int] = mapped_column(default=0)
+    # Totais calculados
+    total_dias_trabalho: Mapped[int] = mapped_column(
+        default=0, server_default=text("0")
+    )
+    total_km: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=0, server_default=text("0")
+    )
+    total_ips: Mapped[int] = mapped_column(default=0, server_default=text("0"))
+    total_faturacao: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), default=0, server_default=text("0")
+    )
+    total_ausencias: Mapped[int] = mapped_column(
+        default=0, server_default=text("0")
+    )
+    total_ferias: Mapped[int] = mapped_column(
+        default=0, server_default=text("0")
+    )
+    total_feriados: Mapped[int] = mapped_column(
+        default=0, server_default=text("0")
+    )
+
+    def __repr__(self) -> str:
+        return f"<MapaAssiduidade {self.mes}/{self.ano} estado={self.estado.value}>"
 
 
 class MapaAssiduidadeLinha(Base):
