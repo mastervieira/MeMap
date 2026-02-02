@@ -7,7 +7,7 @@ from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base_mixin import Base, MapaBaseMixin, TipoDiaAssiduidade
-from .user import User
+from src.db.models.user import User
 
 
 class Documento(Base):

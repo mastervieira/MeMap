@@ -1,5 +1,5 @@
-from db.models.base_mixin import MapaBaseMixin
-from db.models.mapas import (
+from src.db.models.base_mixin import MapaBaseMixin
+from src.db.models.mapas import (
     MapaAssiduidade,
     MapaAssiduidadeLinha,
     MapaTaxas,

@@ -23,7 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base_mixin import Base, MapaBaseMixin, UserRole
+from src.db.models.base_mixin import Base, MapaBaseMixin, UserRole
 
 # =============================================================================
 # USER
@@ -74,5 +74,6 @@ class User(Base):
     # mapas_contas = relationship("MapaConta", back_populates="tecnico")
 
     pf_documentos: Mapped[list["Documento"]] = relationship(
-        "Documento", back_populates="user", cascade="all, delete-orphan"
+        "src.db.models.mapas.Documento",
+        back_populates="user", cascade="all, delete-orphan"
     )

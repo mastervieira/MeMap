@@ -1,0 +1,57 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# 📝 EDITORCONFIG - Configuração universal de editor (PEP8)
+# ═══════════════════════════════════════════════════════════════════════════
+# https://editorconfig.org
+
+root = true
+
+# Configurações globais
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+# Python - PEP8
+[*.py]
+indent_size = 4
+max_line_length = 79
+
+# Python - Type stubs
+[*.pyi]
+indent_size = 4
+max_line_length = 79
+
+# Markdown - Permitir trailing whitespace (necessário para quebras de linha)
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# TOML
+[*.toml]
+indent_size = 2
+
+# YAML
+[*.{yml,yaml}]
+indent_size = 2
+
+# JSON
+[*.json]
+indent_size = 2
+
+# Configuration files
+[{.flake8,.pylintrc}]
+indent_size = 4
+
+# Makefile - Deve usar tabs
+[Makefile]
+indent_style = tab
+
+# Shell scripts
+[*.sh]
+indent_size = 2
+
+# Ficheiros de configuração do VSCode
+[.vscode/*.json]
+indent_size = 2

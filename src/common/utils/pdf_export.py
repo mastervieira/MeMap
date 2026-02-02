@@ -22,7 +22,7 @@ from reportlab.platypus import (
 class PDFExporter:
     """Classe para exportar dados para PDF com formatação profissional."""
 
-    def __init__(self, filename: str, title: str = "Relatório") -> None:
+    def __init__(self, filename: str = "output.pdf", title: str = "Relatório") -> None:
         """Inicializa o exportador PDF.
 
         Args:
@@ -216,6 +216,117 @@ class PDFExporter:
 
             traceback.print_exc()
             return False
+
+    def exportar_mapa_assiduidade(self, mapa_data: dict, output_path: str) -> dict:
+        """Exporta mapa de assiduidade para PDF.
+
+        Args:
+            mapa_data: Dados do mapa.
+            output_path: Caminho de saída.
+
+        Returns:
+            Dict com resultado.
+        """
+        try:
+            # Atualiza configuração
+            self.filename = output_path
+            self.doc.filename = output_path
+
+            # Título
+            mes = mapa_data.get('mes')
+            ano = mapa_data.get('ano')
+            self.add_title(f"Mapa de Assiduidade - {mes}/{ano}")
+
+            # Totais
+            self.add_heading("Resumo", level=2)
+            totais = [
+                ["Dias Trabalho", str(mapa_data.get('total_dias_trabalho', 0))],
+                ["Total KM", f"{mapa_data.get('total_km', 0):.2f}"],
+                ["Total IPS", str(mapa_data.get('total_ips', 0))],
+                ["Total Faturação", f"{mapa_data.get('total_faturacao', 0):.2f} €"]
+            ]
+            self.add_table(totais, col_widths=[5, 5])
+
+            # Detalhes
+            self.add_heading("Detalhes Diários", level=2)
+            headers = ["Dia", "Semana", "Tipo", "IPS", "Valor", "KM", "Locais"]
+            rows = []
+            for linha in mapa_data.get('linhas', []):
+                rows.append([
+                    str(linha.get('dia', '')),
+                    linha.get('dia_semana', ''),
+                    linha.get('tipo', ''),
+                    str(linha.get('ips', '')),
+                    f"{linha.get('valor_sem_iva', 0):.2f}",
+                    f"{linha.get('km', 0):.2f}",
+                    linha.get('locais', '') or ''
+                ])
+
+            self.add_table([headers] + rows, col_widths=[1.5, 3, 3, 1.5, 2.5, 2, 5])
+
+            if self.build():
+                return {"sucesso": True, "caminho": output_path}
+            else:
+                return {"sucesso": False, "erro": "Falha ao gerar PDF"}
+
+        except Exception as e:
+            return {"sucesso": False, "erro": str(e)}
+
+    def exportar_mapa_taxas(self, mapa_data: dict, output_path: str) -> dict:
+        """Exporta mapa de taxas para PDF.
+
+        Args:
+            mapa_data: Dados do mapa.
+            output_path: Caminho de saída.
+
+        Returns:
+            Dict com resultado.
+        """
+        try:
+            # Atualiza configuração
+            self.filename = output_path
+            self.doc.filename = output_path
+
+            # Título
+            mes = mapa_data.get('mes')
+            ano = mapa_data.get('ano')
+            self.add_title(f"Mapa de Taxas - {mes}/{ano}")
+
+            # Totais
+            self.add_heading("Resumo por Distrito", level=2)
+            totais = [
+                ["Setúbal", f"{mapa_data.get('total_setubal', 0):.2f} €"],
+                ["Santarém", f"{mapa_data.get('total_santarem', 0):.2f} €"],
+                ["Évora", f"{mapa_data.get('total_evora', 0):.2f} €"],
+                ["Total IPS", str(mapa_data.get('total_ips', 0))],
+                ["Total Faturação", f"{mapa_data.get('total_faturacao', 0):.2f} €"]
+            ]
+            self.add_table(totais, col_widths=[5, 5])
+
+            # Detalhes
+            self.add_heading("Detalhes por Recibo", level=2)
+            headers = ["Ordem", "Recibo", "Setúbal", "Santarém", "Évora", "IPS", "Dívidas"]
+            rows = []
+            for linha in mapa_data.get('linhas', []):
+                rows.append([
+                    str(linha.get('ordem', '')),
+                    str(linha.get('recibo', '')),
+                    f"{linha.get('setubal', 0):.2f}",
+                    f"{linha.get('santarem', 0):.2f}",
+                    f"{linha.get('evora', 0):.2f}",
+                    str(linha.get('ips', '')),
+                    f"{linha.get('dividas', 0):.2f}"
+                ])
+
+            self.add_table([headers] + rows, col_widths=[2, 2, 3, 3, 3, 2, 3])
+
+            if self.build():
+                return {"sucesso": True, "caminho": output_path}
+            else:
+                return {"sucesso": False, "erro": "Falha ao gerar PDF"}
+
+        except Exception as e:
+            return {"sucesso": False, "erro": str(e)}
 
 
 def export_table_to_pdf(

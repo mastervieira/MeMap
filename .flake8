@@ -1,0 +1,54 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# 🔍 FLAKE8 - Configuração PEP8 rigorosa
+# ═══════════════════════════════════════════════════════════════════════════
+
+[flake8]
+# PEP8 - Comprimento máximo de linha
+max-line-length = 79
+max-doc-length = 72
+
+# Complexidade ciclomática
+max-complexity = 10
+
+# Ignorar erros específicos (compatibilidade com Black)
+extend-ignore =
+    E203,
+    W503,
+    E501
+
+# Pastas e ficheiros a excluir
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    .eggs,
+    *.egg-info,
+    .pytest_cache,
+    .mypy_cache,
+    .tox,
+    docs
+
+# Convenção de docstrings
+docstring-convention = pep257
+
+# Plugins flake8
+# flake8-docstrings: D*
+# flake8-bugbear: B*
+# flake8-comprehensions: C4*
+# flake8-simplify: SIM*
+
+# Ignorar avisos específicos de docstrings em testes
+per-file-ignores =
+    tests/*:D100,D101,D102,D103,D104
+    __init__.py:F401,D104
+
+# Contagem de erros
+count = True
+statistics = True
+show-source = True
+
+# Format
+format = pylint

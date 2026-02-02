@@ -15,13 +15,13 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session, joinedload
 
-from db.models.base_mixin import EstadoDocumento, TipoDiaAssiduidade
-from db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
+from src.db.models.base_mixin import EstadoDocumento, TipoDiaAssiduidade
+from src.db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
 
 logger = logging.getLogger(__name__)
 
 
-class MapaAssiduidadeRepository:
+class MapaTaxasRepository:
     """Repository para operações de persistência do Mapa de Assiduidade.
 
     Implementa IRepository[MapaAssiduidade] para conformidade com contratos.

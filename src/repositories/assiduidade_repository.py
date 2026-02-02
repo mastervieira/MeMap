@@ -22,11 +22,11 @@ from src.common.execptions.assiduidade import (
     MapaAssiduidadePersistenceError,
     MapaAssiduidadeValidationError,
 )
-from db.models.base_mixin import (
+from src.db.models.base_mixin import (
     EstadoDocumento,
     TipoDiaAssiduidade,
 )
-from db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
+from src.db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
 
 logger = logging.getLogger(__name__)
 
