@@ -21,6 +21,7 @@ Uso:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -38,6 +39,8 @@ from ..constants.pdf_constants import (
     PDF_MAGIC,
 )
 from .base_validator import BaseValidator
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
