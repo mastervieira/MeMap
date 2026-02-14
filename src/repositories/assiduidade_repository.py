@@ -11,20 +11,16 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.orm import Session, joinedload
 
+from src.common.constants.enums import EstadoDocumento, TipoDiaAssiduidade
 from src.common.execptions.assiduidade import (
-    MapaAssiduidadeBusinessRuleError,
     MapaAssiduidadeInvalidStateError,
     MapaAssiduidadeNotFoundError,
     MapaAssiduidadePersistenceError,
     MapaAssiduidadeValidationError,
-)
-from src.db.models.base_mixin import (
-    EstadoDocumento,
-    TipoDiaAssiduidade,
 )
 from src.db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
 
@@ -84,24 +80,12 @@ class MapaAssiduidadeRepository:
         """
         # Validação de entrada
         if mes is None or ano is None:
-            raise MapaAssiduidadeValidationError(
-                field="mes/ano",
-                value={"mes": mes, "ano": ano},
-                reason="Mes e ano são obrigatórios",
-            )
+            raise ValueError("Mes e ano são obrigatórios")
         if ano < 2000 or ano > 2100:
-            raise MapaAssiduidadeValidationError(
-                field="ano",
-                value=ano,
-                reason=f"Ano inválido: {ano}. Deve ser entre 2000 e 2100"
-            )
+            raise ValueError(f"Ano inválido: {ano}. Deve ser entre 2000 e 2100")
 
         if not (1 <= mes <= 12):
-            raise MapaAssiduidadeValidationError(
-                field="mes",
-                value=mes,
-                reason=f"Mês inválido: {mes}. Deve ser entre 1 e 12",
-            )
+            raise ValueError(f"Mês inválido: {mes}. Deve ser entre 1 e 12")
 
         try:
             mapa = MapaAssiduidade(
@@ -113,9 +97,11 @@ class MapaAssiduidadeRepository:
             )
             self._session.add(mapa)
             self._session.flush()
+            self._session.commit()
             return mapa
         except Exception as e:
             # Não expõe o erro original para o cliente
+            self._session.rollback()
             raise MapaAssiduidadePersistenceError(
                 operation="criar", original_error=e
             )
@@ -179,6 +165,27 @@ class MapaAssiduidadeRepository:
         except Exception as e:
             raise MapaAssiduidadePersistenceError(
                 operation="buscar por mes/ano", original_error=e
+            )
+
+    def buscar_todos(self) -> list[MapaAssiduidade]:
+        """Busca todos os Mapas de Assiduidade.
+
+        Returns:
+            Lista com todos os MapaAssiduidade (com linhas carregadas)
+
+        Raises:
+            MapaAssiduidadePersistenceError: Se erro ao buscar
+        """
+        try:
+            return (
+                self._session.query(MapaAssiduidade)
+                .options(joinedload(MapaAssiduidade.linhas))
+                .order_by(MapaAssiduidade.ano.desc(), MapaAssiduidade.mes.desc())
+                .all()
+            )
+        except Exception as e:
+            raise MapaAssiduidadePersistenceError(
+                operation="buscar todos", original_error=e
             )
 
     def atualizar(self, entity: MapaAssiduidade) -> None:
@@ -284,15 +291,15 @@ class MapaAssiduidadeRepository:
         dia: int,
         dia_semana: str,
         tipo: TipoDiaAssiduidade = TipoDiaAssiduidade.TRABALHO,
-        recibo_inicio: Optional[int] = None,
-        recibo_fim: Optional[int] = None,
+        recibo_inicio: int | None = None,
+        recibo_fim: int | None = None,
         ips: int = 0,
         valor_sem_iva: Decimal = Decimal("0"),
-        locais: Optional[str] = None,
+        locais: str | None = None,
         km: Decimal = Decimal("0"),
-        motivo: Optional[str] = None,
-        periodo: Optional[str] = None,
-        observacoes: Optional[str] = None,
+        motivo: str | None = None,
+        periodo: str | None = None,
+        observacoes: str | None = None,
     ) -> MapaAssiduidadeLinha:
         """Adiciona dia ao mapa.
 
@@ -333,7 +340,7 @@ class MapaAssiduidadeRepository:
         return linha
 
     def adicionar_dias_bulk(
-        self, mapa_id: int, dias_data: list[dict]
+        self, mapa_id: int, dias_data: list[dict[str, int | str | Decimal | None]]
     ) -> list[MapaAssiduidadeLinha]:
         """Adiciona múltiplos dias de uma vez.
 
@@ -369,7 +376,7 @@ class MapaAssiduidadeRepository:
             dias.append(linha)
             self._session.add(linha)
         self._session.flush()
-        return dias
+        return dias  # type: ignore
 
     def limpar_dias(self, mapa_id: int) -> int:
         """Remove todos os dias de um mapa.
@@ -419,6 +426,8 @@ class MapaAssiduidadeRepository:
             )
 
         mapa.estado = EstadoDocumento.FECHADO
+        mapa.finalizado_em = datetime.now(timezone.utc)
+        mapa.fechado_em = datetime.now(timezone.utc)
         mapa.updated_at = datetime.now(timezone.utc)
         self._session.flush()
         return mapa
@@ -476,7 +485,8 @@ class MapaAssiduidadeRepository:
             MapaAssiduidadeNotFoundError: Se mapa não encontrado
             MapaAssiduidadePersistenceError: Se erro de persistência
         """
-        from mapa_contas.services.estado_manager import EstadoManager
+        # TODO: Implementar EstadoManager quando estiver disponível
+        # from mapa_contas.services.estado_manager import EstadoManager
 
         try:
             mapa = (
@@ -489,16 +499,19 @@ class MapaAssiduidadeRepository:
             if not mapa:
                 raise MapaAssiduidadeNotFoundError(mapa_id)
 
-            manager = EstadoManager(self._session)
-            resultado = manager.reabrir(mapa, motivo)
+            # Simples transição para RASCUNHO
+            if mapa.estado != EstadoDocumento.FECHADO:
+                raise MapaAssiduidadeInvalidStateError(
+                    mapa_id=mapa_id,
+                    current_state=mapa.estado,
+                    operation="reabrir"
+                )
 
-            if not resultado.sucesso:
-                logger.warning(
-                    f"Falha ao reabrir MapaAssiduidade id={mapa_id}: {resultado.mensagem}"
-                )
-                raise MapaAssiduidadeBusinessRuleError(
-                    rule=f"Reabertura não permitida: {resultado.mensagem}"
-                )
+            mapa.estado = EstadoDocumento.RASCUNHO
+            mapa.reopen_count = (mapa.reopen_count or 0) + 1
+            mapa.updated_at = datetime.now(timezone.utc)
+            self._session.flush()
+            self._session.commit()
 
             logger.info(
                 f"MapaAssiduidade id={mapa_id} reaberto com sucesso (motivo: {motivo})"
@@ -507,7 +520,7 @@ class MapaAssiduidadeRepository:
 
         except MapaAssiduidadeNotFoundError:
             raise  # Re-lança a exceção específica
-        except MapaAssiduidadeBusinessRuleError:
+        except MapaAssiduidadeInvalidStateError:
             raise  # Re-lança a exceção específica
         except Exception as e:
             raise MapaAssiduidadePersistenceError(

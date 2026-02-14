@@ -31,10 +31,10 @@ FIELD_CONFIGS = {
 }
 
 # Allowed separators for decimal numbers
-DECIMAL_SEPARATORS = {".", ","}
+DECIMAL_SEPARATORS: set[str] = {".", ","}
 
 # Type hints
-NUMERIC_TYPES = (int, float)
+NUMERIC_TYPES: tuple[type[int], type[float]] = (int, float)
 ALLOWED_TYPES = ("int", "float", "decimal", "percentage")
 
 # Precision for floating point comparisons

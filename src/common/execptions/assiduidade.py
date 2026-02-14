@@ -5,9 +5,9 @@ para camadas externas da aplicação, mantendo a segurança e consistência.
 """
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AssiduidadeDomainError(Exception):
@@ -22,13 +22,13 @@ class AssiduidadeDomainError(Exception):
         message: str,
         error_code: str | None = None,
         details: dict[str, Any] | None = None,
-    ):
-        self.message = message
-        self.error_code = error_code or self.__class__.__name__
-        self.details = details or {}
+    ) -> None:
+        self.message: str = message
+        self.error_code: str = error_code or self.__class__.__name__
+        self.details: dict[str, Any] = details or {}
         super().__init__(self.message)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Converte a exceção para um dicionário seguro para serialização."""
         return {
             "error": self.error_code,
@@ -36,7 +36,7 @@ class AssiduidadeDomainError(Exception):
             "details": self.details,
         }
 
-    def log_error(self, context: str = ""):
+    def log_error(self, context: str = "") -> None:
         """Registra o erro nos logs com detalhes técnicos."""
         logger.error(
             f"{context} - {self.error_code}: {self.message}",
@@ -52,7 +52,7 @@ class AssiduidadeDomainError(Exception):
 class MapaAssiduidadeValidationError(AssiduidadeDomainError):
     """Validação de dados do mapa falhou."""
 
-    def __init__(self, field: str, value: Any, reason: str):
+    def __init__(self, field: str, value: Any, reason: str) -> None:
         super().__init__(
             message=f"Valor inválido para campo '{field}': {reason}",
             error_code="VALIDACAO_MAPA_ASSIDUIDADE",
@@ -90,7 +90,7 @@ class MapaAssiduidadeInvalidStateError(AssiduidadeDomainError):
 class MapaAssiduidadeAlreadyExistsError(AssiduidadeDomainError):
     """Mapa de assiduidade já existe para o período."""
 
-    def __init__(self, mes: int, ano: int):
+    def __init__(self, mes: int, ano: int) -> None:
         super().__init__(
             message=f"Já existe um mapa de assiduidade para o período {mes}/{ano}.",
             error_code="MAPA_ASSIDUIDADE_JA_EXISTE",
@@ -118,7 +118,7 @@ class MapaAssiduidadePersistenceError(AssiduidadeDomainError):
 class MapaAssiduidadeNotFoundError(AssiduidadeDomainError):
     """Mapa de Assiduidade não encontrado."""
 
-    def __init__(self, mapa_id: int):
+    def __init__(self, mapa_id: int) -> None:
         super().__init__(
             message=f"Mapa de Assiduidade com ID {mapa_id} não encontrado.",
             error_code="MAPA_ASSIDUIDADE_NAO_ENCONTRADO",
@@ -130,7 +130,7 @@ class MapaAssiduidadeNotFoundError(AssiduidadeDomainError):
 class MapaAssiduidadePermissionError(AssiduidadeDomainError):
     """Usuário não tem permissão para operar no mapa."""
 
-    def __init__(self, user_id: int, operation: str, mapa_id: int = None):
+    def __init__(self, user_id: int, operation: str, mapa_id: int = None) -> None: # type: ignore
         super().__init__(
             message=f"Usuário {user_id} não tem permissão para {operation}.",
             error_code="PERMISSAO_NEGADA_ASSIDUIDADE",
@@ -146,7 +146,7 @@ class MapaAssiduidadePermissionError(AssiduidadeDomainError):
 class MapaAssiduidadeUnexpectedError(AssiduidadeDomainError):
     """Erro inesperado no domínio de assiduidade."""
 
-    def __init__(self, operation: str, original_error: Exception):
+    def __init__(self, operation: str, original_error: Exception) -> None:
         super().__init__(
             message=f"Ocorreu um erro inesperado ao {operation}.",
             error_code="ERRO_INESPERADO_ASSIDUIDADE",

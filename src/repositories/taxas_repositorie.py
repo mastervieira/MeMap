@@ -15,8 +15,13 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session, joinedload
 
-from src.db.models.base_mixin import EstadoDocumento, TipoDiaAssiduidade
-from src.db.models.mapas import MapaAssiduidade, MapaAssiduidadeLinha
+from src.common.constants.enums import EstadoDocumento, TipoDiaAssiduidade
+from src.db.models.mapas import (
+    MapaAssiduidade,
+    MapaAssiduidadeLinha,
+    MapaTaxas,
+    MapaTaxasLinha,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +61,8 @@ class MapaTaxasRepository:
         estado: EstadoDocumento = EstadoDocumento.RASCUNHO,
         wizard_data: dict[str, Any] | None = None,
         **kwargs: Any,
-    ) -> MapaAssiduidade:
-        """Cria novo Mapa de Assiduidade.
+    ) -> MapaTaxas:
+        """Cria novo Mapa de Taxas.
 
         Args:
             mes: Mês (1-12)
@@ -67,7 +72,7 @@ class MapaTaxasRepository:
             **kwargs: Argumentos adicionais (ignorados)
 
         Returns:
-            MapaAssiduidade criado com ID
+            MapaTaxas criado com ID
 
         Raises:
             ValueError: Se mes ou ano inválidos
@@ -80,7 +85,7 @@ class MapaTaxasRepository:
             raise ValueError(f"Ano inválido: {ano}")
 
         try:
-            mapa = MapaAssiduidade(
+            mapa = MapaTaxas(
                 mes=mes,
                 ano=ano,
                 estado=estado,
@@ -91,38 +96,40 @@ class MapaTaxasRepository:
             )
             self._session.add(mapa)
             self._session.flush()
+            self._session.commit()
             return mapa
         except Exception as e:
-            raise RuntimeError(f"Erro ao criar MapaAssiduidade: {e}") from e
+            self._session.rollback()
+            raise RuntimeError(f"Erro ao criar MapaTaxas: {e}") from e
 
-    def buscar_por_id(self, id: int) -> MapaAssiduidade | None:
-        """Busca Mapa de Assiduidade por ID.
+    def buscar_por_id(self, id: int) -> MapaTaxas | None:
+        """Busca Mapa de Taxas por ID.
 
         Args:
             id: ID do mapa
 
         Returns:
-            MapaAssiduidade ou None
+            MapaTaxas ou None
         """
         try:
             return (
-                self._session.query(MapaAssiduidade)
-                .options(joinedload(MapaAssiduidade.linhas))
-                .filter(MapaAssiduidade.id == id)
+                self._session.query(MapaTaxas)
+                .options(joinedload(MapaTaxas.linhas))
+                .filter(MapaTaxas.id == id)
                 .first()
             )
         except Exception:
             return None
 
-    def buscar_por_mes_ano(self, mes: int, ano: int) -> MapaAssiduidade | None:
-        """Busca Mapa de Assiduidade por mês/ano.
+    def buscar_por_mes_ano(self, mes: int, ano: int) -> MapaTaxas | None:
+        """Busca Mapa de Taxas por mês/ano.
 
         Args:
             mes: Mês (1-12)
             ano: Ano
 
         Returns:
-            MapaAssiduidade ou None (mais recente se houver múltiplos)
+            MapaTaxas ou None (mais recente se houver múltiplos)
 
         Raises:
             ValueError: Se mês ou ano inválidos
@@ -134,20 +141,20 @@ class MapaTaxasRepository:
 
         try:
             return (
-                self._session.query(MapaAssiduidade)
-                .options(joinedload(MapaAssiduidade.linhas))
+                self._session.query(MapaTaxas)
+                .options(joinedload(MapaTaxas.linhas))
                 .filter(
-                    MapaAssiduidade.mes == mes,
-                    MapaAssiduidade.ano == ano,
+                    MapaTaxas.mes == mes,
+                    MapaTaxas.ano == ano,
                 )
-                .order_by(MapaAssiduidade.versao.desc())
+                .order_by(MapaTaxas.versao.desc())
                 .first()
             )
         except Exception:
             return None
 
-    def atualizar(self, entity: MapaAssiduidade) -> None:
-        """Atualiza Mapa de Assiduidade.
+    def atualizar(self, entity: MapaTaxas) -> None:
+        """Atualiza Mapa de Taxas.
 
         Args:
             entity: Entidade a atualizar
@@ -188,17 +195,17 @@ class MapaTaxasRepository:
         except Exception:
             return False
 
-    def listar_todos(self) -> list[MapaAssiduidade]:
-        """Lista todos os Mapas de Assiduidade.
+    def listar_todos(self) -> list[MapaTaxas]:
+        """Lista todos os Mapas de Taxas.
 
         Returns:
-            Lista de MapaAssiduidade ordenada por ano/mês descendente
+            Lista de MapaTaxas ordenada por ano/mês descendente
         """
         try:
             return (
-                self._session.query(MapaAssiduidade)
+                self._session.query(MapaTaxas)
                 .order_by(
-                    MapaAssiduidade.ano.desc(), MapaAssiduidade.mes.desc()
+                    MapaTaxas.ano.desc(), MapaTaxas.mes.desc()
                 )
                 .all()
             )
@@ -336,18 +343,97 @@ class MapaTaxasRepository:
         self._session.flush()
         return dias
 
-    def limpar_dias(self, mapa_id: int) -> int:
-        """Remove todos os dias de um mapa.
+    def adicionar_linha(
+        self,
+        mapa_id: int,
+        ordem: int,
+        recibo: int,
+        setubal: Decimal = Decimal("0"),
+        santarem: Decimal = Decimal("0"),
+        evora: Decimal = Decimal("0"),
+        ips: int = 0,
+        dividas: Decimal = Decimal("0"),
+        dia_origem: Optional[int] = None,
+    ) -> "MapaTaxasLinha":
+        """Adiciona linha ao mapa de taxas.
+
+        Args:
+            mapa_id: ID do mapa
+            ordem: Ordem da linha
+            recibo: Número do recibo
+            setubal: Valor de Setúbal
+            santarem: Valor de Santarém
+            evora: Valor de Évora
+            ips: Valor de IPS
+            dividas: Valor de dívidas
+            dia_origem: Dia de origem (opcional)
+
+        Returns:
+            MapaTaxasLinha criada
+        """
+        from src.db.models.mapas import MapaTaxasLinha
+
+        linha = MapaTaxasLinha(
+            mapa_id=mapa_id,
+            ordem=ordem,
+            recibo=recibo,
+            setubal=setubal,
+            santarem=santarem,
+            evora=evora,
+            ips=ips,
+            dividas=dividas,
+            dia_origem=dia_origem,
+        )
+        self._session.add(linha)
+        self._session.flush()
+        return linha
+
+    def adicionar_linhas_bulk(
+        self, mapa_id: int, linhas_data: list[dict]
+    ) -> list["MapaTaxasLinha"]:
+        """Adiciona múltiplas linhas ao mapa de taxas.
+
+        Args:
+            mapa_id: ID do mapa
+            linhas_data: Lista de dicts com dados das linhas
+
+        Returns:
+            Lista de MapaTaxasLinha criadas
+        """
+        from src.db.models.mapas import MapaTaxasLinha
+
+        linhas = []
+        for data in linhas_data:
+            linha = MapaTaxasLinha(
+                mapa_id=mapa_id,
+                ordem=data.get("ordem", 0),
+                recibo=data["recibo"],
+                setubal=Decimal(str(data.get("setubal", 0))),
+                santarem=Decimal(str(data.get("santarem", 0))),
+                evora=Decimal(str(data.get("evora", 0))),
+                ips=data.get("ips", 0),
+                dividas=Decimal(str(data.get("dividas", 0))),
+                dia_origem=data.get("dia_origem"),
+            )
+            linhas.append(linha)
+            self._session.add(linha)
+        self._session.flush()
+        return linhas
+
+    def limpar_linhas(self, mapa_id: int) -> int:
+        """Remove todas as linhas de um mapa.
 
         Args:
             mapa_id: ID do mapa
 
         Returns:
-            Número de dias removidos
+            Número de linhas removidas
         """
+        from src.db.models.mapas import MapaTaxasLinha
+
         count = (
-            self._session.query(MapaAssiduidadeLinha)
-            .filter(MapaAssiduidadeLinha.mapa_id == mapa_id)
+            self._session.query(MapaTaxasLinha)
+            .filter(MapaTaxasLinha.mapa_id == mapa_id)
             .delete()
         )
         self._session.flush()
@@ -357,27 +443,27 @@ class MapaTaxasRepository:
     # GESTÃO DE ESTADOS
     # =========================================================================
 
-    def finalizar(self, mapa_id: int) -> MapaAssiduidade:
+    def finalizar(self, mapa_id: int) -> MapaTaxas:
         """Muda estado para FECHADO (finalizado).
 
         Args:
             mapa_id: ID do mapa
 
         Returns:
-            MapaAssiduidade atualizado
+            MapaTaxas atualizado
 
         Raises:
             ValueError: Se mapa não encontrado ou já fechado
         """
         mapa = self.buscar_por_id(mapa_id)
         if not mapa:
-            raise ValueError(f"MapaAssiduidade id={mapa_id} não encontrado")
+            raise ValueError(f"MapaTaxas id={mapa_id} não encontrado")
 
         # Permitir finalizar se RASCUNHO ou ABERTO (reaberto para edição)
         estados_editaveis = [EstadoDocumento.RASCUNHO, EstadoDocumento.ABERTO]
         if mapa.estado not in estados_editaveis:
             raise ValueError(
-                f"MapaAssiduidade id={mapa_id} está fechado e não pode ser alterado"
+                f"MapaTaxas id={mapa_id} está fechado e não pode ser alterado"
             )
 
         mapa.estado = EstadoDocumento.FECHADO
@@ -401,20 +487,21 @@ class MapaTaxasRepository:
         Raises:
             ValueError: Se mapa não encontrado ou transição inválida
         """
-        from mapa_contas.services.estado_manager import EstadoManager
+        # TODO: Implementar EstadoManager quando estiver disponível
+        # from mapa_contas.services.estado_manager import EstadoManager
 
         mapa = self.buscar_por_id(mapa_id)
         if not mapa:
             raise ValueError(f"MapaAssiduidade id={mapa_id} não encontrado")
 
-        manager = EstadoManager(self._session)
-        resultado = manager.fechar(mapa)
-
-        if not resultado.sucesso:
-            logger.warning(
-                f"Falha ao fechar MapaAssiduidade id={mapa_id}: {resultado.mensagem}"
+        if mapa.estado != EstadoDocumento.ABERTO:
+            raise ValueError(
+                f"MapaAssiduidade id={mapa_id} está no estado {mapa.estado.value} e não pode ser fechado"
             )
-            raise ValueError(resultado.mensagem)
+
+        mapa.estado = EstadoDocumento.FECHADO
+        mapa.updated_at = datetime.now()
+        self._session.flush()
 
         logger.info(f"MapaAssiduidade id={mapa_id} fechado com sucesso")
         return mapa
@@ -434,20 +521,21 @@ class MapaTaxasRepository:
         Raises:
             ValueError: Se mapa não encontrado, transição inválida ou motivo em falta
         """
-        from mapa_contas.services.estado_manager import EstadoManager
+        # TODO: Implementar EstadoManager quando estiver disponível
+        # from mapa_contas.services.estado_manager import EstadoManager
 
         mapa = self.buscar_por_id(mapa_id)
         if not mapa:
             raise ValueError(f"MapaAssiduidade id={mapa_id} não encontrado")
 
-        manager = EstadoManager(self._session)
-        resultado = manager.reabrir(mapa, motivo)
-
-        if not resultado.sucesso:
-            logger.warning(
-                f"Falha ao reabrir MapaAssiduidade id={mapa_id}: {resultado.mensagem}"
+        if mapa.estado != EstadoDocumento.FECHADO:
+            raise ValueError(
+                f"MapaAssiduidade id={mapa_id} está no estado {mapa.estado.value} e não pode ser reaberto"
             )
-            raise ValueError(resultado.mensagem)
+
+        mapa.estado = EstadoDocumento.RASCUNHO
+        mapa.updated_at = datetime.now()
+        self._session.flush()
 
         logger.info(
             f"MapaAssiduidade id={mapa_id} reaberto com sucesso (motivo: {motivo})"
@@ -458,18 +546,39 @@ class MapaTaxasRepository:
     # CÁLCULOS E TOTAIS
     # =========================================================================
 
-    def recalcular_totais(self, mapa_id: int) -> MapaAssiduidade:
+    def calcular_totais(self, mapa_id: int) -> MapaTaxas:
+        """Calcula os totais do mapa de taxas a partir das linhas.
+
+        Args:
+            mapa_id: ID do mapa
+
+        Returns:
+            MapaTaxas com totais recalculados
+        """
+        mapa = (
+            self._session.query(MapaTaxas)
+            .filter(MapaTaxas.id == mapa_id)
+            .first()
+        )
+        if not mapa:
+            raise ValueError(f"MapaTaxas id={mapa_id} não encontrado")
+
+        mapa.calcular_totais()
+        self._session.flush()
+        return mapa
+
+    def recalcular_totais(self, mapa_id: int) -> MapaTaxas:
         """Recalcula totais a partir dos dias.
 
         Args:
             mapa_id: ID do mapa
 
         Returns:
-            MapaAssiduidade com totais actualizados
+            MapaTaxas com totais actualizados
         """
         mapa = self.buscar_por_id(mapa_id)
         if not mapa:
-            raise ValueError(f"MapaAssiduidade id={mapa_id} não encontrado")
+            raise ValueError(f"MapaTaxas id={mapa_id} não encontrado")
 
         # Contar dias por tipo e somar valores
         total_dias_trabalho = 0

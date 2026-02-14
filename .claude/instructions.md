@@ -988,9 +988,9 @@ Antes de começar qualquer página:
 
 ```
 Logging & Security
-- [ ] Logging configurado em src/main.py
-- [ ] sys.excepthook captura crashes
-- [ ] Tests executam com coverage
+- [X] Logging configurado em src/main.py
+- [X] sys.excepthook captura crashes
+- [X] Tests executam com coverage
 
 Wizard MVVM
 - [ ] BaseViewModel criada e testada

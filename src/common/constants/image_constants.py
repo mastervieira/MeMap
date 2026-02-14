@@ -18,7 +18,7 @@ ALLOWED_MIME_TYPES = {
 }
 
 # Allowed PIL formats
-ALLOWED_PIL_FORMATS = {"PNG", "JPEG", "GIF", "BMP", "WEBP"}
+ALLOWED_PIL_FORMATS: set[str] = {"PNG", "JPEG", "GIF", "BMP", "WEBP"}
 
 # File size limits
 MAX_FILE_SIZE_MB = 50  # 50 MB for images
@@ -30,7 +30,7 @@ CACHE_DIR = "cache/images"
 CACHE_ENABLED = True
 
 # EXIF data - metadata to strip (contains sensitive info)
-EXIF_TAGS_TO_STRIP = {
+EXIF_TAGS_TO_STRIP: set[str] = {
     "DateTime",
     "DateTimeOriginal",
     "DateTimeDigitized",

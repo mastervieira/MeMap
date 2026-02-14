@@ -7,6 +7,8 @@ from PySide6.QtCore import Qt, QTimer, QEasingCurve, QPropertyAnimation, Signal
 from PySide6.QtGui import QColor, QPainter, QPainterPath, QLinearGradient
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
 
+from src.common.themes import ThemeManager
+
 
 class ToastNotification(QWidget):
     """
@@ -25,6 +27,9 @@ class ToastNotification(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        # Theme manager
+        self.theme_manager = ThemeManager()
+
         # Configurações iniciais
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -42,29 +47,14 @@ class ToastNotification(QWidget):
 
         # Texto da mensagem
         self.message_label = QLabel()
-        self.message_label.setStyleSheet("""
-            QLabel {
-                font-size: 14px;
-                font-weight: 500;
-                color: white;
-            }
-        """)
+        # Cor será definida dinamicamente ao mostrar a mensagem
 
         # Botão de fechar
         self.close_button = QLabel("✕")
         self.close_button.setFixedWidth(20)
         self.close_button.setAlignment(Qt.AlignCenter)
-        self.close_button.setStyleSheet("""
-            QLabel {
-                font-size: 16px;
-                color: rgba(255, 255, 255, 0.7);
-                font-weight: bold;
-            }
-            QLabel:hover {
-                color: white;
-                cursor: pointer;
-            }
-        """)
+        self.close_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        # Cor será definida dinamicamente ao mostrar a mensagem
         self.close_button.mousePressEvent = self._on_close_clicked
 
         # Adiciona widgets ao layout
@@ -95,15 +85,18 @@ class ToastNotification(QWidget):
         path = QPainterPath()
         path.addRoundedRect(self.rect(), 12, 12)
 
+        # Obtém a paleta de cores do tema atual
+        palette = self.theme_manager.current_palette
+
         # Define a cor de fundo baseado no tipo de mensagem
         colors = {
-            "info": QColor("#2D2D30"),
-            "success": QColor("#2E7A6E"),
-            "error": QColor("#A82E2E"),
-            "warning": QColor("#CC9900")
+            "info": QColor(palette.background_tertiary),
+            "success": QColor(palette.success_pressed),
+            "error": QColor(palette.error_pressed),
+            "warning": QColor(palette.warning_pressed)
         }
 
-        color = colors.get(self._message_type, QColor("#2D2D30"))
+        color = colors.get(self._message_type, QColor(palette.background_tertiary))
 
         # Cria gradiente
         gradient = QLinearGradient(0, 0, 0, self.height())
@@ -112,8 +105,10 @@ class ToastNotification(QWidget):
 
         painter.fillPath(path, gradient)
 
-        # Borda sutil
-        painter.setPen(QColor(0, 0, 0, 50))
+        # Borda sutil usando cor do tema
+        border_color = QColor(palette.border)
+        border_color.setAlpha(100)
+        painter.setPen(border_color)
         painter.drawPath(path)
 
     def show_message(self, message: str, message_type: str = "info", duration: int = 3000):
@@ -127,6 +122,26 @@ class ToastNotification(QWidget):
         """
         self._message_type = message_type
         self.message_label.setText(message)
+
+        # Define cores baseadas no tema
+        palette = self.theme_manager.current_palette
+
+        # Define estilo dos textos
+        self.message_label.setStyleSheet(f"""
+            QLabel {{
+                font-size: 14px;
+                font-weight: 500;
+                color: {palette.text_primary};
+            }}
+        """)
+
+        self.close_button.setStyleSheet(f"""
+            QLabel {{
+                font-size: 16px;
+                color: {palette.text_secondary};
+                font-weight: bold;
+            }}
+        """)
 
         # Define ícone baseado no tipo
         icons = {
@@ -350,7 +365,8 @@ class ToastDemo(QWidget):
 
         # Título
         title = QLabel("Demonstração de Notificações")
-        title.setStyleSheet("font-size: 18px; font-weight: bold; color: #D4D4D4;")
+        palette = ThemeManager().current_palette
+        title.setStyleSheet(f"font-size: 18px; font-weight: bold; color: {palette.text_primary};")
 
         # Botões de teste
         buttons_layout = QVBoxLayout()

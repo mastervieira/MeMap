@@ -3,24 +3,24 @@ Estilos de componentes específicos para a aplicação MeMap Pro.
 Separa os estilos inline em classes reutilizáveis.
 """
 
-from src.frontend.styles.styles import ColorPalette
+from src.common.themes.colors import ColorPalette
+from src.common.themes import ThemeManager
 
 
 class SidebarStyles:
     """Estilos para componentes do Sidebar."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_title_style() -> str:
         """Retorna o estilo para o título do sidebar."""
+        palette = ThemeManager().current_palette
         return f"""
             QLabel#sidebar_title {{
                 font-size: 18px;
                 font-weight: 700;
-                color: {SidebarStyles.colors.ACCENT};
+                color: {palette.accent};
                 margin-bottom: 16px;
-                border-bottom: 1px solid #333;
+                border-bottom: 1px solid {palette.border};
                 padding-bottom: 8px;
             }}
         """
@@ -29,28 +29,28 @@ class SidebarStyles:
 class NavbarStyles:
     """Estilos para componentes da Navbar."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_page_title_style() -> str:
         """Retorna o estilo para o título da página."""
+        palette = ThemeManager().current_palette
         return f"""
             QLabel#page_title {{
                 font-size: 16px;
                 font-weight: 600;
-                color: {NavbarStyles.colors.TEXT_PRIMARY};
+                color: {palette.text_primary};
             }}
         """
 
     @staticmethod
     def get_status_label_style() -> str:
         """Retorna o estilo para o label de status."""
+        palette = ThemeManager().current_palette
         return f"""
             QLabel#status_label {{
                 font-size: 12px;
-                color: {NavbarStyles.colors.TEXT_SECONDARY};
-                background-color: {NavbarStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                color: {palette.text_secondary};
+                background-color: {palette.surface_hover};
+                border: 1px solid {palette.border};
                 border-radius: 4px;
                 padding: 4px 8px;
             }}
@@ -60,33 +60,33 @@ class NavbarStyles:
 class FooterStyles:
     """Estilos para componentes do Footer."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_system_info_style() -> str:
         """Retorna o estilo para informações do sistema."""
+        palette = ThemeManager().current_palette
         return f"""
             QLabel#system_info {{
                 font-size: 11px;
-                color: {FooterStyles.colors.TEXT_SECONDARY};
+                color: {palette.text_secondary};
             }}
         """
 
     @staticmethod
     def get_progress_bar_style() -> str:
         """Retorna o estilo para a barra de progresso."""
+        palette = ThemeManager().current_palette
         return f"""
             QProgressBar#global_progress {{
-                background-color: {FooterStyles.colors.SURFACE_PRESSED};
-                border: 1px solid #333;
+                background-color: {palette.background_tertiary};
+                border: 1px solid {palette.border};
                 border-radius: 6px;
                 text-align: center;
                 color: transparent;
             }}
             QProgressBar#global_progress::chunk {{
                 background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {FooterStyles.colors.ACCENT},
-                    stop:1 {FooterStyles.colors.ACCENT_HOVER});
+                    stop:0 {palette.accent},
+                    stop:1 {palette.accent_hover});
                 border-radius: 5px;
             }}
         """
@@ -95,40 +95,42 @@ class FooterStyles:
 class DashboardPageStyles:
     """Estilos para componentes da página Dashboard."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_title_style() -> str:
         """Retorna o estilo para o título da página."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 24px;
             font-weight: 700;
-            color: {DashboardPageStyles.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         """
 
     @staticmethod
     def get_description_style() -> str:
         """Retorna o estilo para a descrição."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 14px;
-            color: {DashboardPageStyles.colors.TEXT_SECONDARY};
+            color: {palette.text_secondary};
         """
 
     @staticmethod
     def get_column_title_style() -> str:
         """Retorna o estilo para títulos das colunas."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 14px;
             font-weight: 600;
-            color: {DashboardPageStyles.colors.ACCENT};
+            color: {palette.accent};
         """
 
     @staticmethod
     def get_column_content_style() -> str:
         """Retorna o estilo para conteúdo das colunas."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 12px;
-            color: {DashboardPageStyles.colors.TEXT_SECONDARY};
+            color: {palette.text_secondary};
             text-align: center;
         """
 
@@ -136,15 +138,14 @@ class DashboardPageStyles:
 class TaskWidgetStyles:
     """Estilos para widgets de tarefas."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_task_frame_style() -> str:
         """Retorna o estilo para o frame da tarefa."""
+        palette = ThemeManager().current_palette
         return f"""
             QFrame {{
-                background-color: {TaskWidgetStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                background-color: {palette.surface_hover};
+                border: 1px solid {palette.border};
                 border-radius: 8px;
                 padding: 12px;
             }}
@@ -153,48 +154,50 @@ class TaskWidgetStyles:
     @staticmethod
     def get_checkbox_style() -> str:
         """Retorna o estilo para o checkbox."""
+        palette = ThemeManager().current_palette
         return f"""
             QPushButton {{
                 background-color: transparent;
                 border: none;
                 font-size: 16px;
-                color: {TaskWidgetStyles.colors.TEXT_SECONDARY};
+                color: {palette.text_secondary};
             }}
             QPushButton:hover {{
-                color: {TaskWidgetStyles.colors.ACCENT};
+                color: {palette.accent};
             }}
         """
 
     @staticmethod
     def get_task_name_style() -> str:
         """Retorna o estilo para o nome da tarefa."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 14px;
             font-weight: 600;
-            color: {TaskWidgetStyles.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         """
 
     @staticmethod
     def get_task_details_style() -> str:
         """Retorna o estilo para detalhes da tarefa."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 12px;
-            color: {TaskWidgetStyles.colors.TEXT_SECONDARY};
+            color: {palette.text_secondary};
         """
 
 
 class ChartWidgetStyles:
     """Estilos para widgets de gráficos."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_chart_frame_style() -> str:
         """Retorna o estilo para o frame do gráfico."""
+        palette = ThemeManager().current_palette
         return f"""
             QFrame {{
-                background-color: {ChartWidgetStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                background-color: {palette.surface_hover};
+                border: 1px solid {palette.border};
                 border-radius: 8px;
                 padding: 16px;
             }}
@@ -203,19 +206,21 @@ class ChartWidgetStyles:
     @staticmethod
     def get_chart_title_style() -> str:
         """Retorna o estilo para o título do gráfico."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 14px;
             font-weight: 600;
-            color: {ChartWidgetStyles.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         """
 
     @staticmethod
     def get_chart_area_style() -> str:
         """Retorna o estilo para a área do gráfico."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 12px;
-            color: {ChartWidgetStyles.colors.TEXT_SECONDARY};
-            background-color: {ChartWidgetStyles.colors.SURFACE_PRESSED};
+            color: {palette.text_secondary};
+            background-color: {palette.background_tertiary};
             border-radius: 4px;
             padding: 20px;
         """
@@ -224,93 +229,94 @@ class ChartWidgetStyles:
 class SettingsPageStyles:
     """Estilos para componentes da página de Configurações."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_title_style() -> str:
         """Retorna o estilo para o título."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 24px;
             font-weight: 700;
-            color: {SettingsPageStyles.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         """
 
     @staticmethod
     def get_description_style() -> str:
         """Retorna o estilo para a descrição."""
+        palette = ThemeManager().current_palette
         return f"""
             font-size: 14px;
-            color: {SettingsPageStyles.colors.TEXT_SECONDARY};
+            color: {palette.text_secondary};
         """
 
     @staticmethod
     def get_section_label_style() -> str:
         """Retorna o estilo para labels de seção."""
+        palette = ThemeManager().current_palette
         return f"""
             font-weight: 600;
-            color: {SettingsPageStyles.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         """
 
 
 class CalendarWidgetStyles:
     """Estilos para widgets de calendário."""
 
-    colors = ColorPalette()
-
     @staticmethod
     def get_calendar_style() -> str:
         """Retorna o estilo completo para o calendário."""
+        palette: ColorPalette = ThemeManager().current_palette
         return f"""
             QCalendarWidget QWidget {{
-                color: {CalendarWidgetStyles.colors.TEXT_PRIMARY};
-                background-color: {CalendarWidgetStyles.colors.SURFACE_HOVER};
+                color: {palette.text_primary};
+                background-color: {palette.background_secondary};
             }}
             QCalendarWidget QTableView {{
-                border: 1px solid #333;
-                border-radius: 8px;
+                border: none;
+                background-color: {palette.background_secondary};
             }}
             QCalendarWidget QTableView QTableCornerButton::section {{
-                background-color: {CalendarWidgetStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                background-color: {palette.background_secondary};
+                border: none;
             }}
             QCalendarWidget QTableView QHeaderView::section {{
-                background-color: {CalendarWidgetStyles.colors.SURFACE_HOVER};
-                color: {CalendarWidgetStyles.colors.TEXT_PRIMARY};
-                border: 1px solid #333;
+                background-color: {palette.background_secondary};
+                color: {palette.text_primary};
+                border: none;
+                border-bottom: 1px solid {palette.border};
                 font-weight: bold;
                 padding: 8px;
                 min-height: 36px;
             }}
             QCalendarWidget QTableView::item {{
-                border: 1px solid #333;
+                border: 1px solid {palette.border};
                 padding: 12px;
                 min-height: 100px;
                 min-width: 100px;
             }}
             QCalendarWidget QTableView::item:selected {{
-                background-color: {CalendarWidgetStyles.colors.ACCENT};
+                background-color: {palette.accent};
                 color: white;
-                border: 2px solid {CalendarWidgetStyles.colors.ACCENT_HOVER};
+                border: 1px solid {palette.accent_hover};
             }}
             QCalendarWidget QTableView::item:hover {{
-                background-color: {CalendarWidgetStyles.colors.SURFACE_PRESSED};
-                border: 1px solid {CalendarWidgetStyles.colors.ACCENT};
+                background-color: {palette.surface_hover};
+                border: 1px solid {palette.accent};
             }}
             QCalendarWidget QToolButton {{
-                color: {CalendarWidgetStyles.colors.TEXT_PRIMARY};
-                background-color: {CalendarWidgetStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                color: {palette.text_primary};
+                background-color: {palette.background_secondary};
+                border: none;
                 border-radius: 6px;
                 min-height: 36px;
                 padding: 8px 16px;
             }}
             QCalendarWidget QToolButton:hover {{
-                background-color: {CalendarWidgetStyles.colors.SURFACE_PRESSED};
+                background-color: {palette.surface_hover};
             }}
             QCalendarWidget QSpinBox {{
-                color: {CalendarWidgetStyles.colors.TEXT_PRIMARY};
-                background-color: {CalendarWidgetStyles.colors.SURFACE_HOVER};
-                border: 1px solid #333;
+                color: {palette.text_primary};
+                background-color: {palette.background_secondary};
+                border: 1px solid {palette.border};
                 border-radius: 6px;
                 min-height: 36px;
             }}

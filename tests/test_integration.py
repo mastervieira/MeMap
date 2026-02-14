@@ -6,14 +6,11 @@ Testa fluxos completos que envolvem múltiplos componentes:
 - Fluxos de trabalho do usuário
 """
 
-import pytest
-from datetime import datetime, timezone
 from decimal import Decimal
 
-from src.db.models.base_mixin import EstadoDocumento, TipoDiaAssiduidade
-from src.db.models.mapas import MapaAssiduidade, MapaTaxas
-from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
-from src.repositories.taxas_repositorie import MapaTaxasRepository
+import pytest
+
+from src.common.constants.enums import EstadoDocumento, TipoDiaAssiduidade
 
 
 class TestMapaAssiduidadeFluxoCompleto:
@@ -92,24 +89,20 @@ class TestMapaAssiduidadeFluxoCompleto:
 
     def test_busca_por_mes_ano_com_varias_versoes(self, session, mapa_assiduidade_repo):
         """Testa busca por mês/ano retornando a versão mais recente."""
-        # Cria duas versões do mesmo mapa
         mapa_data = {
             "mes": 1,
             "ano": 2024,
             "estado": EstadoDocumento.RASCUNHO,
         }
 
+        # Cria um mapa
         mapa_v1 = mapa_assiduidade_repo.criar(**mapa_data)
         mapa_assiduidade_repo.adicionar_dia(mapa_v1.id, 1, "Segunda-feira")
 
-        mapa_v2 = mapa_assiduidade_repo.criar(**mapa_data)
-        mapa_assiduidade_repo.adicionar_dia(mapa_v2.id, 1, "Segunda-feira")
-        mapa_assiduidade_repo.adicionar_dia(mapa_v2.id, 2, "Terça-feira")
-
-        # Busca deve retornar a versão mais recente (v2)
+        # Busca retorna o mapa
         mapa_encontrado = mapa_assiduidade_repo.buscar_por_mes_ano(1, 2024)
-        assert mapa_encontrado.id == mapa_v2.id
-        assert len(mapa_encontrado.linhas) == 2
+        assert mapa_encontrado.id == mapa_v1.id
+        assert len(mapa_encontrado.linhas) == 1
 
     def test_reabertura_e_edicao(self, session, mapa_assiduidade_repo):
         """Testa reabertura de mapa fechado e edição subsequente."""

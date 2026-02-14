@@ -56,26 +56,33 @@ class StyleManager:
     """Gerenciador de estilos QSS."""
 
     def __init__(self):
+        # Importa aqui para evitar import circular
+        from src.common.themes import ThemeManager
+        self.theme_manager = ThemeManager()
+        # Mantém ColorPalette para compatibilidade, mas não usa
         self.colors = ColorPalette()
 
     def get_main_stylesheet(self) -> str:
         """Retorna o stylesheet principal da aplicação."""
+        # Usa as cores do tema atual (dinâmicas)
+        palette = self.theme_manager.current_palette
+
         return f"""
         /* Estilo Global */
         QMainWindow {{
-            background-color: {self.colors.BACKGROUND};
-            color: {self.colors.TEXT_PRIMARY};
+            background-color: {palette.background};
+            color: {palette.text_primary};
         }}
 
         QWidget {{
             font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
             font-size: 14px;
-            color: {self.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         }}
 
         /* Botões Primários */
         QPushButton {{
-            background-color: {self.colors.PRIMARY};
+            background-color: {palette.primary};
             color: white;
             border: none;
             border-radius: 8px;
@@ -85,23 +92,23 @@ class StyleManager:
         }}
 
         QPushButton:hover {{
-            background-color: {self.colors.PRIMARY_HOVER};
+            background-color: {palette.primary_hover};
         }}
 
         QPushButton:pressed {{
-            background-color: {self.colors.PRIMARY_PRESSED};
+            background-color: {palette.primary_pressed};
         }}
 
         QPushButton:disabled {{
-            background-color: {self.colors.TEXT_DISABLED};
-            color: {self.colors.TEXT_SECONDARY};
+            background-color: {palette.text_disabled};
+            color: {palette.text_secondary};
         }}
 
         /* Botões Secundários */
         QPushButton[secondary="true"] {{
             background-color: transparent;
-            color: {self.colors.TEXT_PRIMARY};
-            border: 1px solid {self.colors.SECONDARY};
+            color: {palette.text_primary};
+            border: 1px solid {palette.secondary};
             border-radius: 8px;
             padding: 10px 16px;
             font-weight: 600;
@@ -109,18 +116,18 @@ class StyleManager:
         }}
 
         QPushButton[secondary="true"]:hover {{
-            background-color: {self.colors.SECONDARY_HOVER};
-            border-color: {self.colors.SECONDARY_HOVER};
+            background-color: {palette.secondary_hover};
+            border-color: {palette.secondary_hover};
         }}
 
         QPushButton[secondary="true"]:pressed {{
-            background-color: {self.colors.SECONDARY_PRESSED};
-            border-color: {self.colors.SECONDARY_PRESSED};
+            background-color: {palette.secondary_pressed};
+            border-color: {palette.secondary_pressed};
         }}
 
         /* Botões de Erro */
         QPushButton[error="true"] {{
-            background-color: {self.colors.ERROR};
+            background-color: {palette.error};
             color: white;
             border: none;
             border-radius: 8px;
@@ -130,53 +137,53 @@ class StyleManager:
         }}
 
         QPushButton[error="true"]:hover {{
-            background-color: {self.colors.ERROR_HOVER};
+            background-color: {palette.error_hover};
         }}
 
         QPushButton[error="true"]:pressed {{
-            background-color: {self.colors.ERROR_PRESSED};
+            background-color: {palette.error_pressed};
         }}
 
         /* Sidebar */
         QFrame#sidebar {{
-            background-color: {self.colors.SURFACE};
-            border-right: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             min-width: 240px;
             max-width: 240px;
         }}
 
         /* Navbar */
         QFrame#navbar {{
-            background-color: {self.colors.SURFACE};
-            border-bottom: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             min-height: 60px;
         }}
 
         /* Footer */
         QFrame#footer {{
-            background-color: {self.colors.SURFACE};
-            border-top: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             min-height: 40px;
         }}
 
         /* Conteúdo Principal */
         QFrame#main_content {{
-            background-color: {self.colors.BACKGROUND};
+            background-color: {palette.background};
         }}
 
         /* Tabelas */
         QTableWidget {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 8px;
-            gridline-color: #333;
-            selection-background-color: {self.colors.ACCENT};
+            gridline-color: {palette.border};
+            selection-background-color: {palette.accent};
             selection-color: white;
         }}
 
         QTableWidget QHeaderView::section {{
-            background-color: {self.colors.SURFACE_HOVER};
-            color: {self.colors.TEXT_PRIMARY};
+            background-color: {palette.surface_hover};
+            color: {palette.text_primary};
             border: none;
             padding: 8px;
             font-weight: 600;
@@ -184,48 +191,48 @@ class StyleManager:
 
         /* Progress Bar */
         QProgressBar {{
-            border: 1px solid #333;
+            border: 1px solid {palette.border};
             border-radius: 4px;
             text-align: center;
-            background-color: {self.colors.SURFACE};
+            background-color: {palette.background_secondary};
         }}
 
         QProgressBar::chunk {{
-            background-color: {self.colors.ACCENT};
+            background-color: {palette.accent};
             width: 20px;
         }}
 
         /* Labels */
         QLabel {{
-            color: {self.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         }}
 
         QLabel[secondary="true"] {{
-            color: {self.colors.TEXT_SECONDARY};
+            color: {palette.text_secondary};
             font-size: 12px;
         }}
 
         /* Line Edit */
         QLineEdit {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 6px;
             padding: 8px 12px;
-            color: {self.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         }}
 
         QLineEdit:focus {{
-            border-color: {self.colors.ACCENT};
-            background-color: {self.colors.SURFACE_HOVER};
+            border-color: {palette.accent};
+            background-color: {palette.surface_hover};
         }}
 
         /* Combobox */
         QComboBox {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 6px;
             padding: 8px 12px;
-            color: {self.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
             min-height: 36px;
         }}
 
@@ -234,27 +241,27 @@ class StyleManager:
         }}
 
         QComboBox QAbstractItemView {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
-            selection-background-color: {self.colors.ACCENT};
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
+            selection-background-color: {palette.accent};
         }}
 
         /* Scrollbar */
         QScrollBar:vertical {{
-            background: {self.colors.SURFACE};
+            background: {palette.background_secondary};
             width: 16px;
-            border-left: 1px solid #333;
+            border: 1px solid {palette.border};
         }}
 
         QScrollBar::handle:vertical {{
-            background: {self.colors.SECONDARY};
+            background: {palette.secondary};
             min-height: 20px;
             border-radius: 8px;
             margin: 2px;
         }}
 
         QScrollBar::handle:vertical:hover {{
-            background: {self.colors.SECONDARY_HOVER};
+            background: {palette.secondary_hover};
         }}
 
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
@@ -263,22 +270,22 @@ class StyleManager:
 
         /* Mensagens de Status */
         QLabel#status_message {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 6px;
             padding: 8px 12px;
-            color: {self.colors.TEXT_PRIMARY};
+            color: {palette.text_primary};
         }}
 
         QLabel#status_error {{
-            background-color: {self.colors.ERROR};
+            background-color: {palette.error};
             color: white;
             border-radius: 6px;
             padding: 8px 12px;
         }}
 
         QLabel#status_success {{
-            background-color: {self.colors.SUCCESS};
+            background-color: {palette.success};
             color: white;
             border-radius: 6px;
             padding: 8px 12px;
@@ -286,24 +293,24 @@ class StyleManager:
 
         /* Calendário */
         QCalendarWidget QWidget {{
-            color: {self.colors.TEXT_PRIMARY};
-            background-color: {self.colors.SURFACE};
+            color: {palette.text_primary};
+            background-color: {palette.background_secondary};
         }}
 
         QCalendarWidget QTableView {{
-            border: 1px solid #333;
+            border: 1px solid {palette.border};
             border-radius: 8px;
         }}
 
         QCalendarWidget QTableView QTableCornerButton::section {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
         }}
 
         QCalendarWidget QTableView QHeaderView::section {{
-            background-color: {self.colors.SURFACE_HOVER};
-            color: {self.colors.TEXT_PRIMARY};
-            border: 1px solid #333;
+            background-color: {palette.surface_hover};
+            color: {palette.text_primary};
+            border: 1px solid {palette.border};
             font-weight: bold;
             padding: 8px;
             min-height: 36px;
@@ -311,27 +318,27 @@ class StyleManager:
         }}
 
         QCalendarWidget QTableView::item {{
-            border: 1px solid #333;
+            border: 1px solid {palette.border};
             padding: 12px;
             min-height: 100px;
             min-width: 100px;
         }}
 
         QCalendarWidget QTableView::item:selected {{
-            background-color: {self.colors.ACCENT};
+            background-color: {palette.accent};
             color: white;
-            border: 2px solid {self.colors.ACCENT_HOVER};
+            border: 2px solid {palette.accent_hover};
         }}
 
         QCalendarWidget QTableView::item:hover {{
-            background-color: {self.colors.SURFACE_HOVER};
-            border: 1px solid {self.colors.ACCENT};
+            background-color: {palette.surface_hover};
+            border: 1px solid {palette.accent};
         }}
 
         QCalendarWidget QToolButton {{
-            color: {self.colors.TEXT_PRIMARY};
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            color: {palette.text_primary};
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 6px;
             min-height: 36px;
             padding: 8px 16px;
@@ -340,13 +347,13 @@ class StyleManager:
         }}
 
         QCalendarWidget QToolButton:hover {{
-            background-color: {self.colors.SURFACE_HOVER};
+            background-color: {palette.surface_hover};
         }}
 
         QCalendarWidget QSpinBox {{
-            color: {self.colors.TEXT_PRIMARY};
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            color: {palette.text_primary};
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 6px;
             min-height: 36px;
             font-size: 16px;
@@ -360,41 +367,41 @@ class StyleManager:
 
         /* Grids */
         QFrame#upper_grid {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 12px;
             padding: 16px;
         }}
 
         QFrame#lower_grid {{
-            background-color: {self.colors.SURFACE};
-            border: 1px solid #333;
+            background-color: {palette.background_secondary};
+            border: 1px solid {palette.border};
             border-radius: 12px;
             padding: 15px;
         }}
 
         QFrame#column_1 {{
-            background-color: {self.colors.SURFACE_HOVER};
-            border: 1px solid #333;
+            background-color: {palette.surface_hover};
+            border: 1px solid {palette.border};
             border-radius: 8px;
             padding: 12px;
             margin-right: 8px;
         }}
 
         QFrame#columns_23 {{
-            background-color: {self.colors.SURFACE_HOVER};
-            border: 1px solid #333;
+            background-color: {palette.surface_hover};
+            border: 1px solid {palette.border};
             border-radius: 8px;
         }}
 
         QFrame#column_2 {{
-            background-color: {self.colors.SURFACE_HOVER};
+            background-color: {palette.surface_hover};
             border: none;
             padding: 12px;
         }}
 
         QFrame#column_3 {{
-            background-color: {self.colors.SURFACE_HOVER};
+            background-color: {palette.surface_hover};
             border: none;
             padding: 12px;
         }}
@@ -403,7 +410,7 @@ class StyleManager:
             background: qlineargradient(
                 x1:0, y1:0, x2:0, y2:1,
                 stop:0 #333,
-                stop:0.5 {self.colors.ACCENT},
+                stop:0.5 {palette.accent},
                 stop:1 #333
             );
             border: none;
@@ -412,10 +419,13 @@ class StyleManager:
 
     def get_sidebar_button_style(self, is_active: bool = False) -> str:
         """Retorna o estilo para botões do sidebar."""
+        # Usa as cores do tema atual
+        palette = self.theme_manager.current_palette
+
         if is_active:
             return f"""
             QPushButton {{
-                background-color: {self.colors.ACCENT};
+                background-color: {palette.accent};
                 color: white;
                 border: none;
                 border-radius: 8px;
@@ -426,14 +436,14 @@ class StyleManager:
             }}
 
             QPushButton:hover {{
-                background-color: {self.colors.ACCENT_HOVER};
+                background-color: {palette.accent_hover};
             }}
             """
         else:
             return f"""
             QPushButton {{
                 background-color: transparent;
-                color: {self.colors.TEXT_PRIMARY};
+                color: {palette.text_primary};
                 border: none;
                 border-radius: 8px;
                 padding: 12px 16px;
@@ -443,11 +453,11 @@ class StyleManager:
             }}
 
             QPushButton:hover {{
-                background-color: {self.colors.SURFACE_HOVER};
-                color: {self.colors.TEXT_PRIMARY};
+                background-color: {palette.surface_hover};
+                color: {palette.text_primary};
             }}
 
             QPushButton:pressed {{
-                background-color: {self.colors.SURFACE_PRESSED};
+                background-color: {palette.background_tertiary};
             }}
             """

@@ -1,13 +1,14 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Optional
 
 from sqlalchemy import JSON, ForeignKey, Index, Numeric, String, Text, text
 from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base_mixin import Base, MapaBaseMixin, TipoDiaAssiduidade
+from src.common.constants.enums import TipoDiaAssiduidade
 from src.db.models.user import User
+
+from .base_mixin import Base, MapaBaseMixin
 
 
 class Documento(Base):
@@ -28,7 +29,7 @@ class Documento(Base):
         user_id: Utilizador dono do documento
     """
 
-    __tablename__ = "pf_documentos"
+    __tablename__: str = "pf_documentos"
 
     # Primary Key
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -52,10 +53,12 @@ class Documento(Base):
 
     # Dados extraídos (JSON)
     # Usamos Optional porque nullable=True
-    dados_extraidos: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+    dados_extraidos: Mapped[dict[str, int | str | float] | None] = mapped_column(JSON)
 
-    # Foreign Key
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    # Foreign Key (pode ser None para testes)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.ip"), nullable=True, default=None
+    )
 
     # Timestamps (v2 recomenda usar utcnow via DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(
@@ -72,7 +75,7 @@ class Documento(Base):
     user: Mapped["User"] = relationship(back_populates="pf_documentos")
 
     # Índices (Sintaxe de __table_args__ mantém-se igual)
-    __table_args__ = (
+    __table_args__: tuple[Index, Index, Index] = (
         Index("idx_pf_documento_hash", "hash_sha256"),
         Index("idx_pf_documento_user", "user_id"),
         Index("idx_pf_documento_status", "status_validacao"),
@@ -82,7 +85,59 @@ class Documento(Base):
         return f"<Documento(id={self.id}, nome='{self.nome_original}', \
             status='{self.status_validacao}')>"
 
-    def to_dict(self) -> dict[str, Any]:
+    def __init__(
+        self,
+        nome_original: str,
+        path_relativo: str,
+        hash_sha256: str,
+        tipo: str,
+        tamanho_bytes:int | None,
+        user_id: int | None = None,
+        status_validacao: str = "PENDENTE",
+        confianca_score: int = 0,
+        dados_extraidos: dict[str, int | str | float] | None = None,
+        **kwargs: int | str | float,
+    ) -> None:
+        """Inicializa um Documento.
+
+        Args:
+            nome_original: Nome original do ficheiro
+            path_relativo: Caminho relativo ao armazenamento
+            hash_sha256: Hash SHA256 do conteúdo
+            tipo: Tipo de ficheiro (PDF, JPEG, etc)
+            tamanho_bytes: Tamanho em bytes
+            user_id: ID do utilizador dono (opcional)
+            status_validacao: Estado de validação
+            confianca_score: Score de confiança (0-100)
+            dados_extraidos: Dados extraídos (JSON)
+            **kwargs: Argumentos adicionais (criados_at, updated_at, id, etc)
+
+        Raises:
+            ValueError: Se campos obrigatórios faltam ou são inválidos
+        """
+        # Validar campos obrigatórios
+        if not nome_original:
+            raise ValueError("nome_original é obrigatório")
+        if not path_relativo:
+            raise ValueError("path_relativo é obrigatório")
+        if not hash_sha256:
+            raise ValueError("hash_sha256 é obrigatório")
+        if not tipo:
+            raise ValueError("tipo é obrigatório")
+        if tamanho_bytes is None or tamanho_bytes < 0:
+            raise ValueError("tamanho_bytes deve ser um número positivo")
+
+        self.nome_original = nome_original
+        self.path_relativo = path_relativo
+        self.hash_sha256 = hash_sha256
+        self.tipo = tipo
+        self.tamanho_bytes = tamanho_bytes
+        self.user_id = user_id
+        self.status_validacao = status_validacao
+        self.confianca_score = confianca_score
+        self.dados_extraidos = dados_extraidos
+
+    def to_dict(self) -> dict[str, int | str | float]:
         return {
             "id": self.id,
             "nome_original": self.nome_original,
@@ -177,9 +232,9 @@ class MapaTaxasLinha(Base):
     setubal: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
     santarem: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
     evora: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
-    ips: Mapped[int] = mapped_column(default=0)
+    ips: Mapped[int ] = mapped_column(default=0)
     dividas: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0)
-    dia_origem: Mapped[Optional[int]] = mapped_column()
+    dia_origem: Mapped[int | None] = mapped_column()
 
     @property
     def total_faturacao(self) -> Decimal:
@@ -245,6 +300,32 @@ class MapaAssiduidade(MapaBaseMixin, Base):
     def __repr__(self) -> str:
         return f"<MapaAssiduidade {self.mes}/{self.ano} estado={self.estado.value}>"
 
+    def recalcular_totais(self) -> None:
+        """Recalcula os totais a partir das linhas.
+
+        Soma os valores das linhas de acordo com o tipo de dia.
+        """
+        self.total_dias_trabalho = 0
+        self.total_km = Decimal("0")
+        self.total_ips = 0
+        self.total_faturacao = Decimal("0")
+        self.total_ausencias = 0
+        self.total_ferias = 0
+        self.total_feriados = 0
+
+        for linha in self.linhas:
+            if linha.tipo == TipoDiaAssiduidade.TRABALHO:
+                self.total_dias_trabalho += 1
+                self.total_km += linha.km or Decimal("0")
+                self.total_ips += linha.ips or 0
+                self.total_faturacao += linha.valor_sem_iva or Decimal("0")
+            elif linha.tipo == TipoDiaAssiduidade.AUSENCIA:
+                self.total_ausencias += 1
+            elif linha.tipo == TipoDiaAssiduidade.FERIAS:
+                self.total_ferias += 1
+            elif linha.tipo == TipoDiaAssiduidade.FERIADO:
+                self.total_feriados += 1
+
 
 class MapaAssiduidadeLinha(Base):
     __tablename__ = "mapas_assiduidade_linhas"
@@ -263,14 +344,14 @@ class MapaAssiduidadeLinha(Base):
     )
 
     # Campos opcionais (nullable=True por defeito no Mapped[Optional])
-    recibo_inicio: Mapped[Optional[int]] = mapped_column()
-    recibo_fim: Mapped[Optional[int]] = mapped_column()
-    ips: Mapped[Optional[int]] = mapped_column(default=0)
-    valor_sem_iva: Mapped[Optional[Decimal]] = mapped_column(
+    recibo_inicio: Mapped[int | None] = mapped_column()
+    recibo_fim: Mapped[int | None] = mapped_column()
+    ips: Mapped[int | None] = mapped_column(default=0)
+    valor_sem_iva: Mapped[Decimal | None] = mapped_column(
         Numeric(10, 2), default=0
     )
-    locais: Mapped[Optional[str]] = mapped_column(String(200))
-    km: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 2), default=0)
-    motivo: Mapped[Optional[str]] = mapped_column(String(200))
-    periodo: Mapped[Optional[str]] = mapped_column(String(20))
-    observacoes: Mapped[Optional[str]] = mapped_column(Text)
+    locais: Mapped[str | None] = mapped_column(String(200))
+    km: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), default=0)
+    motivo: Mapped[str | None] = mapped_column(String(200))
+    periodo: Mapped[str | None] = mapped_column(String(20))
+    observacoes: Mapped[str | None] = mapped_column(Text)

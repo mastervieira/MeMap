@@ -3,38 +3,23 @@ Lógica de negócio e validação para o formulário guiado.
 Implementa o princípio da responsabilidade única, separando a estrutura dos dados da validação.
 """
 
-from typing import Annotated, TypedDict, TypeVar, Generic, Any, Final
-from dataclasses import dataclass, field
-from enum import Enum
+from typing import Annotated, Any, TypedDict
 
-# --- Simulação de Dependências Internas (Módulo 'common') ---
-# Em um cenário real, estes seriam importados de src.common
-def validate_positive_number(value: Any) -> bool:
-    """Simula um validador genérico do módulo common."""
-    try:
-        return float(str(value).replace(",", ".")) >= 0
-    except ValueError:
-        return False
-
-class BaseFormValidator:
-    """Classe base simulada do módulo common."""
-    def __init__(self):
-        self.errors: list[str] = []
-
-# --- Definições de Tipos e Enums ---
-
-class ZonaTrabalho(Enum):
-    """Zonas de trabalho disponíveis para seleção."""
-    NORTE = "Norte"
-    SUL = "Sul"
-    CENTRO = "Centro"
-    LISBOA = "Lisboa"
-    ALGARVE = "Algarve"
-    ILHAS = "Ilhas"
+# Importa componentes centralizados de common
+from src.common.utils.validation import (
+    validate_positive_number,
+)
+from src.common.validators.form_validator import (
+    BaseFormValidator,
+    ValidationResult,
+    safe_float_convert,
+    safe_int_convert,
+)
 
 # Uso de Annotated para metadados de validação (Python 3.10+)
 PositiveInt = Annotated[int, "Deve ser >= 0"]
 PositiveFloat = Annotated[float, "Deve ser >= 0.0"]
+
 
 class FormPage1Data(TypedDict):
     """Estrutura de dados tipada para a primeira página do formulário."""
@@ -45,14 +30,6 @@ class FormPage1Data(TypedDict):
     zona_secundaria: str
     total_km: PositiveFloat
 
-@dataclass(frozen=True)
-class ValidationResult:
-    """Resultado imutável de uma operação de validação."""
-    is_valid: bool
-    data: FormPage1Data | None = None
-    error_message: str | None = None
-
-# --- Lógica de Validação (Responsabilidade Única) ---
 
 class WizardValidator(BaseFormValidator):
     """
@@ -66,7 +43,7 @@ class WizardValidator(BaseFormValidator):
         Retorna um objeto ValidationResult com os dados limpos ou erro.
         """
         try:
-            # Validação de tipos básicos usando os simuladores do 'common'
+            # Validação de tipos básicos
             if not all([
                 validate_positive_number(raw_data.get("quantidade_recibos")),
                 validate_positive_number(raw_data.get("recibo_inicio")),
@@ -78,14 +55,26 @@ class WizardValidator(BaseFormValidator):
                     error_message="Certifique-se de que todos os campos numéricos são positivos."
                 )
 
+            # Conversão segura de dados
+            qtd = safe_int_convert(raw_data["quantidade_recibos"])
+            inicio = safe_int_convert(raw_data["recibo_inicio"])
+            fim = safe_int_convert(raw_data["recibo_fim"])
+            km = safe_float_convert(raw_data["total_km"])
+
+            if None in (qtd, inicio, fim, km):
+                return ValidationResult(
+                    is_valid=False,
+                    error_message="Erro ao converter valores numéricos."
+                )
+
             # Conversão e limpeza de dados
             clean_data: FormPage1Data = {
-                "quantidade_recibos": int(raw_data["quantidade_recibos"]),
-                "recibo_inicio": int(raw_data["recibo_inicio"]),
-                "recibo_fim": int(raw_data["recibo_fim"]),
+                "quantidade_recibos": qtd,  # type: ignore
+                "recibo_inicio": inicio,  # type: ignore
+                "recibo_fim": fim,  # type: ignore
                 "zona_primaria": str(raw_data.get("zona_primaria", "")),
                 "zona_secundaria": str(raw_data.get("zona_secundaria", "")),
-                "total_km": float(str(raw_data["total_km"]).replace(",", ".")),
+                "total_km": km,  # type: ignore
             }
 
             # Validação de Regras de Negócio
@@ -93,6 +82,15 @@ class WizardValidator(BaseFormValidator):
                 return ValidationResult(
                     is_valid=False,
                     error_message="O número do recibo final não pode ser menor que o inicial."
+                )
+
+            # Validação de consistência: quantidade deve bater com range
+            expected_quantity = clean_data["recibo_fim"] - clean_data["recibo_inicio"] + 1
+            if clean_data["quantidade_recibos"] != expected_quantity:
+                return ValidationResult(
+                    is_valid=False,
+                    error_message=f"Quantidade ({clean_data['quantidade_recibos']}) não corresponde ao range "
+                                f"({expected_quantity} recibos entre {clean_data['recibo_inicio']} e {clean_data['recibo_fim']})."
                 )
 
             return ValidationResult(is_valid=True, data=clean_data)

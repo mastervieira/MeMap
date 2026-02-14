@@ -1,21 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from decimal import Decimal
 from enum import Enum
 
 from sqlalchemy import (
-    JSON,
-    Boolean,
-    Column,
     DateTime,
-    ForeignKey,
-    Index,
     Integer,
-    Numeric,
     String,
-    Text,
-    false,
     text,
 )
 from sqlalchemy import (
@@ -23,7 +14,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.db.models.base_mixin import Base, MapaBaseMixin, UserRole
+from src.common.constants.enums import UserRole
+from src.db.models.base_mixin import Base
 
 # =============================================================================
 # USER
@@ -42,7 +34,7 @@ class User(Base):
         features_enabled: lista de features habilitadas (ex: ["personal_finance"])
     """
 
-    __tablename__ = "users"
+    __tablename__: str = "users"
 
     ip: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     username: Mapped[str] = mapped_column(
@@ -77,3 +69,19 @@ class User(Base):
         "src.db.models.mapas.Documento",
         back_populates="user", cascade="all, delete-orphan"
     )
+
+    def to_dict(self) -> dict[str, str | int | bool | None]:
+        """Converte User para dicionário.
+
+        Returns:
+            Dicionário com dados do utilizador
+        """
+        return {
+            "ip": self.ip,
+            "username": self.username,
+            "nome_completo": self.nome_completo,
+            "modo_bd": self.modo_bd.value,
+            "ativo": self.ativo,
+            "ultimo_login": self.ultimo_login.isoformat() if self.ultimo_login else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }

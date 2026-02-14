@@ -9,12 +9,16 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.14, <3.15"
 sqlalchemy = "^2.0.46"
-pip = "^25.3"
+pip = "^26.0"
 pip-audit = "^2.10.0"
 openpyxl = "^3.1.5"
 reportlab = "^4.4.9"
 pyside6 = "^6.10.1"
 qasync = "^0.28.0"
+pillow = "^12.1.1"
+pypdf2 = "^3.0.1"
+qtawesome = "^1.4.1"
+pyqtgraph = "^0.14.0"
 
 
 [tool.poetry.group.dev.dependencies]
