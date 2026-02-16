@@ -16,9 +16,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 
 from src.frontend.views.main_view import MainView
-from src.frontend.views.notifications import NotificationManager, StatusManager
+from src.frontend.components.notifications import NotificationManager
+from src.frontend.views.notifications import StatusManager
 
-# from src.frontend.workers.async_worker import CryptoWorker, HeavyCalculationWorker, FileProcessorWorker
 
 
 class ApplicationManager:
@@ -53,6 +53,10 @@ class ApplicationManager:
             ]
         )
         self.logger = logging.getLogger(__name__)
+
+        # Suprimir erros do qasync durante encerramento (esperados e inofensivos)
+        qasync_logger = logging.getLogger('qasync')
+        qasync_logger.setLevel(logging.CRITICAL)  # Apenas erros críticos, não ERROR
 
     async def initialize(self):
         """Inicializa a aplicação de forma assíncrona."""
@@ -101,7 +105,7 @@ class ApplicationManager:
         self.logger.info(f"MainView geometry após adjustSize: {self.main_view.geometry()}")
 
         # Inicializa gerenciadores
-        self.notification_manager = NotificationManager(self.main_view)
+        self.notification_manager = NotificationManager.instance(self.main_view)
         self.status_manager = StatusManager(self.main_view.navbar)
 
         # Conecta sinais
@@ -113,13 +117,23 @@ class ApplicationManager:
         self._exit_future = asyncio.Future()
 
         # Conecta o sinal de encerramento do Qt ao Future
-        self.app.aboutToQuit.connect(lambda: self._exit_future.set_result(0))
+        # Usa set_result apenas se o Future ainda não estiver resolvido
+        def on_quit():
+            if not self._exit_future.done():
+                self._exit_future.set_result(0)
+
+        self.app.aboutToQuit.connect(on_quit)
 
         # Aguarda até a aplicação ser fechada
-        exit_code = await self._exit_future
+        try:
+            exit_code = await self._exit_future
+        except asyncio.CancelledError:
+            # Se a tarefa foi cancelada durante o shutdown, retorna 0
+            exit_code = 0
+
         return exit_code
 
-    def _setup_global_settings(self):
+    def _setup_global_settings(self) -> None:
         """Configurações globais da aplicação."""
         if self.app:
             # Estilo
@@ -134,7 +148,7 @@ class ApplicationManager:
             # Cursor padrão (removido - causa warnings no Qt)
             # self.app.setOverrideCursor(Qt.ArrowCursor)
 
-    def _connect_signals(self):
+    def _connect_signals(self) -> None:
         """Conecta sinais globais da aplicação."""
         if self.main_view and self.notification_manager:
             # Conecta sinais de workers para notificações
@@ -143,7 +157,7 @@ class ApplicationManager:
             # Conecta sinais de UI para status
             self._connect_ui_signals()
 
-    def _connect_worker_signals(self):
+    def _connect_worker_signals(self) -> None:
         """Conecta sinais de workers para notificações."""
         if self.main_view:
             # Conecta sinais de páginas específicas
@@ -151,68 +165,25 @@ class ApplicationManager:
             # vamos manter apenas a conexão de sinais básicos
             pass
 
-    def _connect_ui_signals(self):
+    def _connect_ui_signals(self) -> None:
         """Conecta sinais de UI para status."""
         if self.main_view:
             # Atualiza status quando mudar de página
             self.main_view.sidebar.page_changed.connect(self._on_page_changed)
 
-    def _on_crypto_started(self):
-        """Callback quando worker de criptomoedas inicia."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status("Carregando dados de criptomoedas...")
-        if self.notification_manager:
-            self.notification_manager.show_info("Iniciando carregamento de criptomoedas...")
-
-    def _on_crypto_stopped(self):
-        """Callback quando worker de criptomoedas para."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status("Carregamento de criptomoedas interrompido.")
-        if self.notification_manager:
-            self.notification_manager.show_warning("Carregamento de criptomoedas interrompido pelo usuário.")
-
-    def _on_calculation_started(self, calc_type: str):
-        """Callback quando worker de cálculo inicia."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status(f"Iniciando cálculo {calc_type}...")
-        if self.notification_manager:
-            self.notification_manager.show_info(f"Iniciando cálculo {calc_type}...")
-
-    def _on_calculation_stopped(self):
-        """Callback quando worker de cálculo para."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status("Cálculo interrompido.")
-        if self.notification_manager:
-            self.notification_manager.show_warning("Cálculo interrompido pelo usuário.")
-
-    def _on_file_started(self, operation: str):
-        """Callback quando worker de arquivo inicia."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status(f"Iniciando operação {operation}...")
-        if self.notification_manager:
-            self.notification_manager.show_info(f"Iniciando operação {operation}...")
-
-    def _on_file_stopped(self):
-        """Callback quando worker de arquivo para."""
-        if self.main_view and hasattr(self.main_view, 'navbar'):
-            self.main_view.navbar.set_status("Operação de arquivo interrompida.")
-        if self.notification_manager:
-            self.notification_manager.show_warning("Operação de arquivo interrompida pelo usuário.")
-
-    def _on_page_changed(self, page_name: str):
+    def _on_page_changed(self, page_name: str) -> None:
         """Callback quando a página é alterada."""
         titles: dict[str, str] = {
             "dashboard": "Dashboard",
-            "crypto": "Criptomoedas",
-            "calculations": "Cálculos",
-            "files": "Arquivos",
+            "recibos": "Recibos",
+            "calendar": "Calendário",
             "settings": "Configurações"
         }
         if self.main_view and hasattr(self.main_view, 'navbar'):
             self.main_view.navbar.set_page_title(titles.get(page_name, page_name))
 
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Limpa recursos da aplicação."""
         self.logger.info("Limpando recursos...")
 

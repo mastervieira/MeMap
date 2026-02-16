@@ -12,13 +12,13 @@ from decimal import Decimal
 import pytest
 
 from src.db.models.base_mixin import EstadoDocumento
-from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 from src.repositories.taxas_repositorie import MapaTaxasRepository
 
 
 @pytest.fixture
-def mapa_assiduidade_data():
-    """Dados de teste para MapaAssiduidade."""
+def tabela_taxas_data():
+    """Dados de teste para TabelaTaxas."""
     return {
         "mes": 1,
         "ano": 2024,
@@ -38,9 +38,9 @@ def mapa_assiduidade_data():
 
 
 @pytest.fixture
-def mapa_assiduidade_repo(session):
-    """Repositório de mapa de assiduidade para testes."""
-    return MapaAssiduidadeRepository(session)
+def tabela_taxas_repo(session):
+    """Repositório de tabela de taxas para testes."""
+    return TabelaTaxasRepository(session)
 
 
 @pytest.fixture

@@ -28,10 +28,12 @@ import logging
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from src.db.models.mapas import TabelaTaxas
+
 from .base_validator import BaseValidator
 
 if TYPE_CHECKING:
-    from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+    from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +65,7 @@ class ReciboValidationResult:
 class ReciboValidator(BaseValidator):
     """Validador para números de recibo."""
 
-    def __init__(self, repository: MapaAssiduidadeRepository | None = None) -> None:
+    def __init__(self, repository: TabelaTaxasRepository | None = None) -> None:
         """Inicializa validador de recibos.
 
         Args:
@@ -126,6 +128,7 @@ class ReciboValidator(BaseValidator):
         mes: int | None = None,
         ano: int | None = None,
         exclude_row: int | None = None,
+        dia_atual: int | None = None,
     ) -> ReciboValidationResult:
         """Valida número de recibo completo.
 
@@ -135,6 +138,7 @@ class ReciboValidator(BaseValidator):
             mes: Mês atual (para verificar duplicados no mês)
             ano: Ano atual (para verificar duplicados no mês)
             exclude_row: Índice da linha a excluir da verificação (ao editar)
+            dia_atual: Dia atual sendo editado (ignora duplicados do próprio dia)
 
         Returns:
             ReciboValidationResult com detalhes da validação
@@ -142,7 +146,7 @@ class ReciboValidator(BaseValidator):
         result = ReciboValidationResult()
 
         # 1. Validar formato numérico
-        validated_num = self._validate_numeric(recibo_num, result)
+        validated_num: int | None = self._validate_numeric(recibo_num, result)
         if validated_num is None:
             return result
 
@@ -155,8 +159,9 @@ class ReciboValidator(BaseValidator):
             )
 
         # 3. Verificar duplicados no mês atual (se repository disponível)
+        # CRÍTICO: Passa dia_atual para ignorar recibos do próprio dia
         if self._repository and mes is not None and ano is not None:
-            self._check_duplicate_in_month(validated_num, mes, ano, result)
+            self._check_duplicate_in_month(validated_num, mes, ano, result, dia_atual)
 
         # 4. Verificar duplicados no histórico completo
         if self._repository:
@@ -238,23 +243,43 @@ class ReciboValidator(BaseValidator):
         mes: int,
         ano: int,
         result: ReciboValidationResult,
+        dia_atual: int | None = None,
     ) -> None:
-        """Verifica se recibo existe no mês atual na BD."""
+        """Verifica se recibo existe no mês atual na BD.
+
+        Args:
+            recibo_num: Número do recibo a validar
+            mes: Mês a verificar
+            ano: Ano a verificar
+            result: Objeto para armazenar resultado da validação
+            dia_atual: Dia atual sendo editado (para ignorar duplicados do próprio dia)
+        """
         try:
             # Buscar mapa do mês
-            mapa = self._repository.buscar_por_mes_ano(mes, ano)
+            mapa: TabelaTaxas | None = self._repository.buscar_por_mes_ano(
+                mes, ano
+                )
             if not mapa:
                 return
 
             # Verificar linhas do mapa
             for linha in mapa.linhas:
+                # CRÍTICO: Ignorar linhas do dia atual (ao editar dia existente)
+                if dia_atual is not None and linha.dia == dia_atual:
+                    logger.debug(
+                        f"Ignorando recibo {recibo_num} do próprio dia {
+                            dia_atual
+                            }")
+                    continue
+
                 # Verificar se recibo está no range desta linha
                 if linha.recibo_inicio <= recibo_num <= linha.recibo_fim:
                     result.is_duplicate_in_month = True
                     if "Mês Atual" not in result.duplicate_locations:
                         result.duplicate_locations.append("Mês Atual")
                     result.add_error(
-                        f"Recibo {recibo_num} já existe no mês {mes}/{ano} (dia {linha.dia})"
+                        f"Recibo {recibo_num} já existe no mês {mes}/{ano} \
+                            (dia {linha.dia})"
                     )
                     break
 
@@ -272,7 +297,7 @@ class ReciboValidator(BaseValidator):
         """Verifica se recibo existe no histórico completo da BD."""
         try:
             # Buscar todos os mapas
-            all_mapas = self._repository.buscar_todos()
+            all_mapas: list[TabelaTaxas] = self._repository.buscar_todos()
 
             for mapa in all_mapas:
                 # Pular mês atual (já verificado)
@@ -302,7 +327,7 @@ class ReciboValidator(BaseValidator):
 def validate_recibo_number(
     recibo_num: int | str,
     current_table_data: list[dict[str, Any]] | None = None,
-    repository: MapaAssiduidadeRepository | None = None,
+    repository: TabelaTaxasRepository | None = None,
     mes: int | None = None,
     ano: int | None = None,
 ) -> dict[str, Any]:
@@ -319,7 +344,7 @@ def validate_recibo_number(
         Dicionário com resultado da validação
     """
     validator = ReciboValidator(repository)
-    result = validator.validate_recibo(
+    result: ReciboValidationResult = validator.validate_recibo(
         recibo_num=recibo_num,
         current_table_data=current_table_data,
         mes=mes,

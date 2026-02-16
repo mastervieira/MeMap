@@ -49,19 +49,19 @@ class AssiduidadeDomainError(Exception):
 
 
 # ===== VALIDAÇÃO DE DADOS =====
-class MapaAssiduidadeValidationError(AssiduidadeDomainError):
+class TabelaTaxasValidationError(AssiduidadeDomainError):
     """Validação de dados do mapa falhou."""
 
     def __init__(self, field: str, value: Any, reason: str) -> None:
         super().__init__(
             message=f"Valor inválido para campo '{field}': {reason}",
-            error_code="VALIDACAO_MAPA_ASSIDUIDADE",
+            error_code="VALIDACAO_TABELA_TAXAS",
             details={"field": field, "value": value, "reason": reason},
         )
 
 
 # ===== REGRAS DE NEGÓCIO =====
-class MapaAssiduidadeBusinessRuleError(AssiduidadeDomainError):
+class TabelaTaxasBusinessRuleError(AssiduidadeDomainError):
     """Regra de negócio do mapa de assiduidade violada."""
 
     def __init__(self, rule: str, details: dict[str, Any] | None = None):
@@ -72,7 +72,7 @@ class MapaAssiduidadeBusinessRuleError(AssiduidadeDomainError):
         )
 
 
-class MapaAssiduidadeInvalidStateError(AssiduidadeDomainError):
+class TabelaTaxasInvalidStateError(AssiduidadeDomainError):
     """Operação inválida para o estado atual do mapa."""
 
     def __init__(self, mapa_id: int, current_state: str, operation: str):
@@ -87,7 +87,7 @@ class MapaAssiduidadeInvalidStateError(AssiduidadeDomainError):
         )
 
 
-class MapaAssiduidadeAlreadyExistsError(AssiduidadeDomainError):
+class TabelaTaxasAlreadyExistsError(AssiduidadeDomainError):
     """Mapa de assiduidade já existe para o período."""
 
     def __init__(self, mes: int, ano: int) -> None:
@@ -99,7 +99,7 @@ class MapaAssiduidadeAlreadyExistsError(AssiduidadeDomainError):
 
 
 # ===== PERSISTÊNCIA =====
-class MapaAssiduidadePersistenceError(AssiduidadeDomainError):
+class TabelaTaxasPersistenceError(AssiduidadeDomainError):
     """Erro ao persistir dados do mapa."""
 
     def __init__(self, operation: str, original_error: Exception = None):
@@ -115,7 +115,7 @@ class MapaAssiduidadePersistenceError(AssiduidadeDomainError):
         )
 
 
-class MapaAssiduidadeNotFoundError(AssiduidadeDomainError):
+class TabelaTaxasNotFoundError(AssiduidadeDomainError):
     """Mapa de Assiduidade não encontrado."""
 
     def __init__(self, mapa_id: int) -> None:
@@ -127,7 +127,7 @@ class MapaAssiduidadeNotFoundError(AssiduidadeDomainError):
 
 
 # ===== AUTORIZAÇÃO/PERMISSÕES =====
-class MapaAssiduidadePermissionError(AssiduidadeDomainError):
+class TabelaTaxasPermissionError(AssiduidadeDomainError):
     """Usuário não tem permissão para operar no mapa."""
 
     def __init__(self, user_id: int, operation: str, mapa_id: int = None) -> None: # type: ignore
@@ -143,7 +143,7 @@ class MapaAssiduidadePermissionError(AssiduidadeDomainError):
 
 
 # ===== ERROS INESPERADOS =====
-class MapaAssiduidadeUnexpectedError(AssiduidadeDomainError):
+class TabelaTaxasUnexpectedError(AssiduidadeDomainError):
     """Erro inesperado no domínio de assiduidade."""
 
     def __init__(self, operation: str, original_error: Exception) -> None:

@@ -1,7 +1,7 @@
 """Testes para os repositórios.
 
 Testa operações CRUD, validações e lógica de negócios dos repositórios:
-- MapaAssiduidadeRepository
+- TabelaTaxasRepository
 - MapaTaxasRepository
 """
 
@@ -12,116 +12,116 @@ import pytest
 from src.common.constants.enums import EstadoDocumento, TipoDiaAssiduidade
 
 
-class TestMapaAssiduidadeRepository:
-    """Testes para MapaAssiduidadeRepository."""
+class TestTabelaTaxasRepository:
+    """Testes para TabelaTaxasRepository."""
 
-    def test_criar_mapa_assiduidade(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa criação de mapa de assiduidade."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+    def test_criar_tabela_taxas(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa criação de tabela de taxas."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
-        assert mapa.id is not None
-        assert mapa.mes == 1
-        assert mapa.ano == 2024
-        assert mapa.estado == EstadoDocumento.RASCUNHO
-        assert mapa.versao == 1
-        assert mapa.wizard_data == {"stage": 1, "data": "test"}
+        assert tabela.id is not None
+        assert tabela.mes == 1
+        assert tabela.ano == 2024
+        assert tabela.estado == EstadoDocumento.RASCUNHO
+        assert tabela.versao == 1
+        assert tabela.wizard_data == {"stage": 1, "data": "test"}
 
-    def test_criar_mapa_assiduidade_mes_invalido(self, mapa_assiduidade_repo):
-        """Testa criação de mapa de assiduidade com mês inválido."""
+    def test_criar_tabela_taxas_mes_invalido(self, tabela_taxas_repo):
+        """Testa criação de tabela de taxas com mês inválido."""
         with pytest.raises(ValueError, match="Mês inválido"):
-            mapa_assiduidade_repo.criar(mes=13, ano=2024)
+            tabela_taxas_repo.criar(mes=13, ano=2024)
 
-    def test_criar_mapa_assiduidade_ano_invalido(self, mapa_assiduidade_repo):
-        """Testa criação de mapa de assiduidade com ano inválido."""
+    def test_criar_tabela_taxas_ano_invalido(self, tabela_taxas_repo):
+        """Testa criação de tabela de taxas com ano inválido."""
         with pytest.raises(ValueError, match="Ano inválido"):
-            mapa_assiduidade_repo.criar(mes=1, ano=1999)
+            tabela_taxas_repo.criar(mes=1, ano=1999)
 
-    def test_buscar_por_id(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa busca de mapa por ID."""
-        mapa_criado = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa_encontrado = mapa_assiduidade_repo.buscar_por_id(mapa_criado.id)
+    def test_buscar_por_id(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa busca de tabela por ID."""
+        tabela_criada = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela_encontrada = tabela_taxas_repo.buscar_por_id(tabela_criada.id)
 
-        assert mapa_encontrado is not None
-        assert mapa_encontrado.id == mapa_criado.id
-        assert mapa_encontrado.mes == mapa_criado.mes
-        assert mapa_encontrado.ano == mapa_criado.ano
+        assert tabela_encontrada is not None
+        assert tabela_encontrada.id == tabela_criada.id
+        assert tabela_encontrada.mes == tabela_criada.mes
+        assert tabela_encontrada.ano == tabela_criada.ano
 
-    def test_buscar_por_id_nao_encontrado(self, mapa_assiduidade_repo):
-        """Testa busca de mapa por ID inexistente."""
-        mapa = mapa_assiduidade_repo.buscar_por_id(999)
-        assert mapa is None
+    def test_buscar_por_id_nao_encontrado(self, tabela_taxas_repo):
+        """Testa busca de tabela por ID inexistente."""
+        tabela = tabela_taxas_repo.buscar_por_id(999)
+        assert tabela is None
 
-    def test_buscar_por_mes_ano(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa busca de mapa por mês/ano."""
-        mapa_criado = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa_encontrado = mapa_assiduidade_repo.buscar_por_mes_ano(1, 2024)
+    def test_buscar_por_mes_ano(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa busca de tabela por mês/ano."""
+        tabela_criada = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela_encontrada = tabela_taxas_repo.buscar_por_mes_ano(1, 2024)
 
-        assert mapa_encontrado is not None
-        assert mapa_encontrado.id == mapa_criado.id
-        assert mapa_encontrado.mes == 1
-        assert mapa_encontrado.ano == 2024
+        assert tabela_encontrada is not None
+        assert tabela_encontrada.id == tabela_criada.id
+        assert tabela_encontrada.mes == 1
+        assert tabela_encontrada.ano == 2024
 
-    def test_buscar_por_mes_ano_nao_encontrado(self, mapa_assiduidade_repo):
-        """Testa busca de mapa por mês/ano inexistente."""
-        mapa = mapa_assiduidade_repo.buscar_por_mes_ano(1, 2024)
-        assert mapa is None
+    def test_buscar_por_mes_ano_nao_encontrado(self, tabela_taxas_repo):
+        """Testa busca de tabela por mês/ano inexistente."""
+        tabela = tabela_taxas_repo.buscar_por_mes_ano(1, 2024)
+        assert tabela is None
 
-    def test_atualizar_mapa(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa atualização de mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa.wizard_data = {"stage": 2, "data": "updated"}
-        mapa_assiduidade_repo.atualizar(mapa)
+    def test_atualizar_tabela(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa atualização de tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela.wizard_data = {"stage": 2, "data": "updated"}
+        tabela_taxas_repo.atualizar(tabela)
 
-        mapa_atualizado = mapa_assiduidade_repo.buscar_por_id(mapa.id)
-        assert mapa_atualizado.wizard_data == {"stage": 2, "data": "updated"}
+        tabela_atualizada = tabela_taxas_repo.buscar_por_id(tabela.id)
+        assert tabela_atualizada.wizard_data == {"stage": 2, "data": "updated"}
 
-    def test_eliminar_mapa(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa eliminação de mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        assert mapa_assiduidade_repo.eliminar(mapa.id) is True
-        assert mapa_assiduidade_repo.buscar_por_id(mapa.id) is None
+    def test_eliminar_tabela(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa eliminação de tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
+        assert tabela_taxas_repo.eliminar(tabela.id) is True
+        assert tabela_taxas_repo.buscar_por_id(tabela.id) is None
 
-    def test_eliminar_mapa_nao_encontrado(self, mapa_assiduidade_repo):
-        """Testa eliminação de mapa inexistente."""
-        assert mapa_assiduidade_repo.eliminar(999) is False
+    def test_eliminar_tabela_nao_encontrado(self, tabela_taxas_repo):
+        """Testa eliminação de tabela inexistente."""
+        assert tabela_taxas_repo.eliminar(999) is False
 
-    def test_listar_todos(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa listagem de todos os mapas."""
-        mapa1 = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa_assiduidade_data["mes"] = 2
-        mapa2 = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+    def test_listar_todos(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa listagem de todos as tabelas."""
+        tabela1 = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela_taxas_data["mes"] = 2
+        tabela2 = tabela_taxas_repo.criar(**tabela_taxas_data)
 
-        mapas = mapa_assiduidade_repo.listar_todos()
-        assert len(mapas) == 2
-        assert mapas[0].id == mapa2.id  # Ordenado por ano/mês descendente
-        assert mapas[1].id == mapa1.id
+        tabelas = tabela_taxas_repo.listar_todos()
+        assert len(tabelas) == 2
+        assert tabelas[0].id == tabela2.id  # Ordenado por ano/mês descendente
+        assert tabelas[1].id == tabela1.id
 
-    def test_adicionar_dia(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa adição de dia ao mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+    def test_adicionar_dia(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa adição de dia à tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
-        linha = mapa_assiduidade_repo.adicionar_dia(
-            mapa_id=mapa.id,
+        linha = tabela_taxas_repo.adicionar_dia(
+            mapa_id=tabela.id,
             dia=1,
             dia_semana="Segunda-feira",
             tipo=TipoDiaAssiduidade.TRABALHO,
             ips=8,
-            valor_sem_iva=Decimal("50.0"),
+            valor_com_iva=Decimal("50.0"),
             km=Decimal("50.0"),
         )
 
         assert linha.id is not None
-        assert linha.mapa_id == mapa.id
+        assert linha.mapa_id == tabela.id
         assert linha.dia == 1
         assert linha.dia_semana == "Segunda-feira"
         assert linha.tipo == TipoDiaAssiduidade.TRABALHO
         assert linha.ips == 8
-        assert linha.valor_sem_iva == Decimal("50.0")
+        assert linha.valor_com_iva == Decimal("50.0")
         assert linha.km == Decimal("50.0")
 
-    def test_adicionar_dias_bulk(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa adição de múltiplos dias ao mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+    def test_adicionar_dias_bulk(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa adição de múltiplos dias à tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
         dias_data = [
             {
@@ -129,7 +129,7 @@ class TestMapaAssiduidadeRepository:
                 "dia_semana": "Segunda-feira",
                 "tipo": "trabalho",
                 "ips": 8,
-                "valor_sem_iva": "50.0",
+                "valor_com_iva": "50.0",
                 "km": "50.0",
             },
             {
@@ -140,79 +140,79 @@ class TestMapaAssiduidadeRepository:
             },
         ]
 
-        linhas = mapa_assiduidade_repo.adicionar_dias_bulk(mapa.id, dias_data)
+        linhas = tabela_taxas_repo.adicionar_dias_bulk(tabela.id, dias_data)
         assert len(linhas) == 2
 
         # Verifica a primeira linha
         assert linhas[0].dia == 1
         assert linhas[0].tipo == TipoDiaAssiduidade.TRABALHO
         assert linhas[0].ips == 8
-        assert linhas[0].valor_sem_iva == Decimal("50.0")
+        assert linhas[0].valor_com_iva == Decimal("50.0")
 
         # Verifica a segunda linha
         assert linhas[1].dia == 2
         assert linhas[1].tipo == TipoDiaAssiduidade.AUSENCIA
         assert linhas[1].motivo == "Doença"
 
-    def test_limpar_dias(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa limpeza de todos os dias de um mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+    def test_limpar_dias(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa limpeza de todos os dias de uma tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
         # Adiciona dias
-        mapa_assiduidade_repo.adicionar_dia(mapa.id, 1, "Segunda-feira")
-        mapa_assiduidade_repo.adicionar_dia(mapa.id, 2, "Terça-feira")
+        tabela_taxas_repo.adicionar_dia(tabela.id, 1, "Segunda-feira")
+        tabela_taxas_repo.adicionar_dia(tabela.id, 2, "Terça-feira")
 
         # Limpa dias
-        count = mapa_assiduidade_repo.limpar_dias(mapa.id)
+        count = tabela_taxas_repo.limpar_dias(tabela.id)
         assert count == 2
 
         # Verifica que não há mais linhas
-        mapa_atualizado = mapa_assiduidade_repo.buscar_por_id(mapa.id)
-        assert len(mapa_atualizado.linhas) == 0
+        tabela_atualizada = tabela_taxas_repo.buscar_por_id(tabela.id)
+        assert len(tabela_atualizada.linhas) == 0
 
-    def test_finalizar_mapa(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa finalização de mapa."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa_finalizado = mapa_assiduidade_repo.finalizar(mapa.id)
+    def test_finalizar_tabela(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa finalização de tabela."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela_finalizada = tabela_taxas_repo.finalizar(tabela.id)
 
-        assert mapa_finalizado.estado == EstadoDocumento.FECHADO
-        assert mapa_finalizado.finalizado_em is not None
-        assert mapa_finalizado.fechado_em is not None
+        assert tabela_finalizada.estado == EstadoDocumento.FECHADO
+        assert tabela_finalizada.finalizado_em is not None
+        assert tabela_finalizada.fechado_em is not None
 
-    def test_finalizar_mapa_ja_fechado(self, mapa_assiduidade_repo, mapa_assiduidade_data):
-        """Testa finalização de mapa já fechado."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
-        mapa_assiduidade_repo.finalizar(mapa.id)
+    def test_finalizar_tabela_ja_fechado(self, tabela_taxas_repo, tabela_taxas_data):
+        """Testa finalização de tabela já fechado."""
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
+        tabela_taxas_repo.finalizar(tabela.id)
 
         # Tentar finalizar novamente deve lançar erro
         with pytest.raises(Exception):  # Pode ser InvalidStateError ou ValueError
-            mapa_assiduidade_repo.finalizar(mapa.id)
+            tabela_taxas_repo.finalizar(tabela.id)
 
-    def test_recalcular_totais(self, mapa_assiduidade_repo, mapa_assiduidade_data):
+    def test_recalcular_totais(self, tabela_taxas_repo, tabela_taxas_data):
         """Testa recálculo de totais a partir das linhas."""
-        mapa = mapa_assiduidade_repo.criar(**mapa_assiduidade_data)
+        tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
         # Adiciona linhas de teste
-        mapa_assiduidade_repo.adicionar_dia(
-            mapa.id, 1, "Segunda-feira", TipoDiaAssiduidade.TRABALHO,
-            ips=8, valor_sem_iva=Decimal("50.0"), km=Decimal("50.0")
+        tabela_taxas_repo.adicionar_dia(
+            tabela.id, 1, "Segunda-feira", TipoDiaAssiduidade.TRABALHO,
+            ips=8, valor_com_iva=Decimal("50.0"), km=Decimal("50.0")
         )
-        mapa_assiduidade_repo.adicionar_dia(
-            mapa.id, 2, "Terça-feira", TipoDiaAssiduidade.AUSENCIA, motivo="Doença"
+        tabela_taxas_repo.adicionar_dia(
+            tabela.id, 2, "Terça-feira", TipoDiaAssiduidade.AUSENCIA, motivo="Doença"
         )
-        mapa_assiduidade_repo.adicionar_dia(
-            mapa.id, 3, "Quarta-feira", TipoDiaAssiduidade.FERIAS
+        tabela_taxas_repo.adicionar_dia(
+            tabela.id, 3, "Quarta-feira", TipoDiaAssiduidade.FERIAS
         )
 
-        mapa_atualizado = mapa_assiduidade_repo.recalcular_totais(mapa.id)
+        tabela_atualizada = tabela_taxas_repo.recalcular_totais(tabela.id)
 
-        assert mapa_atualizado.total_dias_trabalho == 1
-        assert mapa_atualizado.total_km == Decimal("50.0")
-        assert mapa_atualizado.total_ips == 8
-        assert mapa_atualizado.total_faturacao == Decimal("50.0")
-        assert mapa_atualizado.total_ausencias == 1
-        assert mapa_atualizado.total_ferias == 1
-        assert mapa_atualizado.total_feriados == 0
+        assert tabela_atualizada.total_dias_trabalho == 1
+        assert tabela_atualizada.total_km == Decimal("50.0")
+        assert tabela_atualizada.total_ips == 8
+        assert tabela_atualizada.total_faturacao == Decimal("50.0")
+        assert tabela_atualizada.total_ausencias == 1
+        assert tabela_atualizada.total_ferias == 1
+        assert tabela_atualizada.total_feriados == 0
 
 
 class TestMapaTaxasRepository:

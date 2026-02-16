@@ -242,19 +242,23 @@ class MapaTaxasLinha(Base):
 
 
 # =============================================================================
-# MAPA DE ASSIDUIDADE
+# TABELA DE TAXAS (BASE DE DADOS PRIMÁRIA)
 # =============================================================================
 
 
-class MapaAssiduidade(MapaBaseMixin, Base):
-    """Mapa de Assiduidade - Registo diário de trabalho.
+class TabelaTaxas(MapaBaseMixin, Base):
+    """Tabela de Taxas - Registo diário de trabalho e faturação.
 
-    Dados origem: Stage 1 (dias especiais) + Stage 2 (lançamentos)
-    Mostra TODOS os dias do mês com marca d'água para FDS/Feriados.
-    Optimizado para impressão A4.
+    Base de dados primária com valores COM IVA inseridos pelo utilizador.
+    Dados origem: Wizard (formulário + tabela de recibos)
+
+    A partir desta tabela serão gerados:
+    - Mapa de Assiduidade (com conversão para valores sem IVA)
+    - Mapa de Taxas
+    - Outros mapas derivados
     """
 
-    __tablename__ = "mapas_assiduidade"
+    __tablename__ = "tabelas_taxas"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
@@ -270,10 +274,10 @@ class MapaAssiduidade(MapaBaseMixin, Base):
     # finalizado_em: Mapped[datetime | None] = mapped_column()
     # fechado_em: Mapped[datetime | None] = mapped_column()
 
-    linhas: Mapped[list["MapaAssiduidadeLinha"]] = relationship(
+    linhas: Mapped[list["TabelaTaxasLinha"]] = relationship(
         back_populates="mapa",
         cascade="all, delete-orphan",
-        order_by="MapaAssiduidadeLinha.dia",
+        order_by="TabelaTaxasLinha.dia",
     )
 
     # Totais calculados
@@ -298,7 +302,7 @@ class MapaAssiduidade(MapaBaseMixin, Base):
     )
 
     def __repr__(self) -> str:
-        return f"<MapaAssiduidade {self.mes}/{self.ano} estado={self.estado.value}>"
+        return f"<TabelaTaxas {self.mes}/{self.ano} estado={self.estado.value}>"
 
     def recalcular_totais(self) -> None:
         """Recalcula os totais a partir das linhas.
@@ -318,7 +322,7 @@ class MapaAssiduidade(MapaBaseMixin, Base):
                 self.total_dias_trabalho += 1
                 self.total_km += linha.km or Decimal("0")
                 self.total_ips += linha.ips or 0
-                self.total_faturacao += linha.valor_sem_iva or Decimal("0")
+                self.total_faturacao += linha.valor_com_iva or Decimal("0")
             elif linha.tipo == TipoDiaAssiduidade.AUSENCIA:
                 self.total_ausencias += 1
             elif linha.tipo == TipoDiaAssiduidade.FERIAS:
@@ -327,15 +331,19 @@ class MapaAssiduidade(MapaBaseMixin, Base):
                 self.total_feriados += 1
 
 
-class MapaAssiduidadeLinha(Base):
-    __tablename__ = "mapas_assiduidade_linhas"
+class TabelaTaxasLinha(Base):
+    """Linha da Tabela de Taxas - Dados de um dia de trabalho.
+
+    Armazena valores COM IVA conforme inseridos pelo utilizador.
+    """
+    __tablename__ = "tabelas_taxas_linhas"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     mapa_id: Mapped[int] = mapped_column(
-        ForeignKey("mapas_assiduidade.id", ondelete="CASCADE")
+        ForeignKey("tabelas_taxas.id", ondelete="CASCADE")
     )
 
-    mapa: Mapped["MapaAssiduidade"] = relationship(back_populates="linhas")
+    mapa: Mapped["TabelaTaxas"] = relationship(back_populates="linhas")
 
     dia: Mapped[int] = mapped_column()
     dia_semana: Mapped[str] = mapped_column(String(20))
@@ -347,8 +355,8 @@ class MapaAssiduidadeLinha(Base):
     recibo_inicio: Mapped[int | None] = mapped_column()
     recibo_fim: Mapped[int | None] = mapped_column()
     ips: Mapped[int | None] = mapped_column(default=0)
-    valor_sem_iva: Mapped[Decimal | None] = mapped_column(
-        Numeric(10, 2), default=0
+    valor_com_iva: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 2), default=0, comment="Valor COM IVA inserido pelo utilizador"
     )
     locais: Mapped[str | None] = mapped_column(String(200))
     km: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), default=0)

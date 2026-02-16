@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Any
 
 from PySide6.QtCore import Signal
 
+from src.common.validators.recibo_validator import ReciboValidationResult
 from src.common.constants import (
     DEFAULT_CELL_VALUE,
     NUMERIC_COLUMNS,
@@ -31,7 +32,7 @@ from src.common.validators import ReciboValidator
 from src.frontend.viewmodels.base_view_model import BaseViewModel
 
 if TYPE_CHECKING:
-    from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+    from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class RecibosTableViewModel(BaseViewModel):
     servico_interno_changed = Signal(bool)  # Estado de Serviço Interno mudou
     recibo_sequence_updated = Signal(int, list)  # start_row, new_values
     row_added = Signal(int, dict)  # row_index, row_data
+    row_deleted = Signal(int, str)  # row_index, recibo_num
     recibo_validation_changed = Signal(int, bool)  # row, is_valid (para cor vermelha)
 
     def __init__(self) -> None:
@@ -65,10 +67,11 @@ class RecibosTableViewModel(BaseViewModel):
         self._recibo_inicio: int = 0
         self._recibo_fim: int = 0
         self._servico_interno: bool = False
-        self._repository: MapaAssiduidadeRepository | None = None
+        self._repository: TabelaTaxasRepository | None = None
         self._recibo_validator: ReciboValidator | None = None
         self._current_mes: int | None = None
         self._current_ano: int | None = None
+        self._current_dia: int | None = None  # CRÍTICO: dia atual para validação
 
     def on_appear(self) -> None:
         """Chamado quando a View é ativada."""
@@ -80,7 +83,7 @@ class RecibosTableViewModel(BaseViewModel):
         self._data.clear()
         self._totals.clear()
 
-    def set_repository(self, repository: MapaAssiduidadeRepository) -> None:
+    def set_repository(self, repository: TabelaTaxasRepository) -> None:
         """Injeta repository para validação de recibos duplicados.
 
         Args:
@@ -90,16 +93,27 @@ class RecibosTableViewModel(BaseViewModel):
         self._recibo_validator = ReciboValidator(repository)
         logger.info("Repository injetado no RecibosTableViewModel")
 
-    def set_current_date(self, mes: int, ano: int) -> None:
-        """Define mês/ano atual para validação de recibos.
+    def set_current_date(
+            self, mes: int,
+            ano: int,
+            dia: int | None = None
+            ) -> None:
+        """Define data atual para validação de recibos.
+
+        CRÍTICO: O parâmetro dia é usado para ignorar duplicados do próprio
+        dia ao editar dias salvos.
 
         Args:
             mes: Mês atual (1-12)
             ano: Ano atual
+            dia: Dia atual sendo editado (opcional, para ignorar duplicados do próprio dia)
         """
         self._current_mes = mes
         self._current_ano = ano
-        logger.info(f"Data atual definida: {mes}/{ano}")
+        self._current_dia = dia
+        logger.info(
+            f"Data atual definida: {dia}/{mes}/{ano}" \
+                if dia else f"Data atual definida: {mes}/{ano}")
 
     def rebuild_data(
             self, quantidade: int,
@@ -116,14 +130,14 @@ class RecibosTableViewModel(BaseViewModel):
         self._quantidade = quantidade
         self._recibo_inicio = recibo_inicio
         self._recibo_fim = recibo_fim
-
+        recibo_fim = recibo_inicio + quantidade - 1
         # Limpa dados antigos
         self._data.clear()
 
         # Cria estrutura de dados para cada recibo
         for i in range(quantidade):
             recibo_num: int = recibo_inicio + i
-            recibo_data: dict[str, Any] = {
+            recibo_data: dict[str, object] = {
                 "Recibo": str(recibo_num),
             }
 
@@ -271,10 +285,10 @@ class RecibosTableViewModel(BaseViewModel):
         Returns:
             Dicionário com nome da coluna → valor formatado
         """
-        formatted = {}
+        formatted: dict[str, str] = {}
 
         for col_name, total in self._totals.items():
-            col_index = RECIBOS_TABLE_COLUMNS.index(col_name)
+            col_index: int = RECIBOS_TABLE_COLUMNS.index(col_name)
 
             # IPs e Km: formato numérico (sem €)
             if col_index in (ReciboColumn.NUM_IPS, ReciboColumn.KM):
@@ -285,7 +299,7 @@ class RecibosTableViewModel(BaseViewModel):
 
         return formatted
 
-    def get_data(self) -> list[dict[str, Any]]:
+    def get_data(self) -> list[dict[str, object]]:
         """Retorna dados brutos da tabela.
 
         Returns:
@@ -293,7 +307,7 @@ class RecibosTableViewModel(BaseViewModel):
         """
         return [row.copy() for row in self._data]
 
-    def get_row_data(self, row: int) -> dict[str, Any] | None:
+    def get_row_data(self, row: int) -> dict[str, object] | None:
         """Retorna dados de uma linha específica.
 
         Args:
@@ -332,7 +346,7 @@ class RecibosTableViewModel(BaseViewModel):
 
     # ==================== FASE 1.4: FILTRO DE LINHAS VAZIAS ====================
 
-    def filter_empty_rows(self) -> list[dict[str, Any]]:
+    def filter_empty_rows(self) -> list[dict[str, object]]:
         """Remove linhas vazias antes de salvar.
 
         Uma linha é vazia se todos os campos numéricos são "0" ou vazios.
@@ -345,7 +359,7 @@ class RecibosTableViewModel(BaseViewModel):
             if self._has_valid_data(row)
         ]
 
-    def _has_valid_data(self, row: dict[str, Any]) -> bool:
+    def _has_valid_data(self, row: dict[str, object]) -> bool:
         """Verifica se linha tem dados válidos.
 
         Args:
@@ -357,7 +371,7 @@ class RecibosTableViewModel(BaseViewModel):
 
         # Verificar colunas numéricas (exceto Recibo)
         for col_name in RECIBOS_TABLE_COLUMNS:
-            col_index = RECIBOS_TABLE_COLUMNS.index(col_name)
+            col_index: int = RECIBOS_TABLE_COLUMNS.index(col_name)
 
             # Ignorar coluna Recibo
             if col_index == ReciboColumn.RECIBO:
@@ -365,7 +379,7 @@ class RecibosTableViewModel(BaseViewModel):
 
             # Verificar se é coluna numérica
             if col_index in NUMERIC_COLUMNS:
-                value = row.get(col_name, "0")
+                value: object = row.get(col_name, "0")
 
                 # Considera não vazia se valor diferente de "0" ou "0,00"
                 if value and value != "0" and value != "0,00":
@@ -459,17 +473,18 @@ class RecibosTableViewModel(BaseViewModel):
 
         # Validar duplicados (se validator disponível)
         if self._recibo_validator:
-            validation_result = self._recibo_validator.validate_recibo(
+            validation_result: ReciboValidationResult = self._recibo_validator.validate_recibo(
                 recibo_num=new_recibo,
                 current_table_data=self._data,
                 mes=self._current_mes,
                 ano=self._current_ano,
                 exclude_row=row,  # Excluir própria linha
+                dia_atual=self._current_dia,  # Ignora duplicados do próprio dia
             )
 
             if not validation_result.is_valid:
                 # Recibo duplicado - emitir erro mas ACEITAR o valor
-                error_msg = " | ".join(validation_result.errors)
+                error_msg: str = " | ".join(validation_result.errors)
                 logger.warning(f"Recibo {new_recibo} duplicado: {error_msg}")
                 self.validation_error.emit(error_msg, row, ReciboColumn.RECIBO)
                 self.recibo_validation_changed.emit(row, False)  # Marcar vermelho
@@ -485,20 +500,21 @@ class RecibosTableViewModel(BaseViewModel):
         self._data[row]["Recibo"] = str(new_recibo)
 
         # Recalcular sequência abaixo (incremento +1)
-        updated_recibos = []
+        updated_recibos: list[str] = []
         for i in range(row + 1, len(self._data)):
-            expected_recibo = new_recibo + (i - row)
+            expected_recibo: int = new_recibo + (i - row)
             self._data[i]["Recibo"] = str(expected_recibo)
             updated_recibos.append(str(expected_recibo))
 
             # Validar cada recibo da sequência também
             if self._recibo_validator:
-                seq_validation = self._recibo_validator.validate_recibo(
+                seq_validation: ReciboValidationResult = self._recibo_validator.validate_recibo(
                     recibo_num=expected_recibo,
                     current_table_data=self._data,
                     mes=self._current_mes,
                     ano=self._current_ano,
                     exclude_row=i,
+                    dia_atual=self._current_dia,  # Ignora duplicados do próprio dia
                 )
                 self.recibo_validation_changed.emit(i, seq_validation.is_valid)
 
@@ -513,6 +529,135 @@ class RecibosTableViewModel(BaseViewModel):
         self.data_changed.emit()
         logger.info(f"Recibo linha {row} editado para {new_recibo}, sequência recalculada")
         return True
+
+    # ==================== CARREGAMENTO DE DADOS SALVOS ====================
+
+    def load_data_from_saved(self, table_data: list[dict[str, object]]) -> None:
+        """Carrega dados salvos preservando recibos exatos (incluindo duplicados).
+
+        Este método substitui rebuild_data ao carregar dados da BD, pois
+        rebuild_data cria sequência automática, mas dados salvos podem ter
+        duplicados ou gaps.
+
+        Args:
+            table_data: Lista de dicts com dados salvos da tabela
+        """
+        if not table_data:
+            logger.warning("Nenhum dado para carregar")
+            return
+
+        # Limpar dados antigos
+        self._data.clear()
+
+        # Carregar dados exatamente como salvos
+        for row_data in table_data:
+            # Garantir que todas as colunas existem
+            complete_row: dict[str, object] = {
+                "Recibo": row_data.get("Recibo", "0"),
+            }
+
+            # Copiar valores numéricos
+            for col_name in RECIBOS_TABLE_COLUMNS:
+                if col_name == "Partilhado":
+                    # Partilhado tem estrutura especial
+                    partilhado_data: object | None = row_data.get("Partilhado")
+                    if isinstance(partilhado_data, dict):
+                        complete_row["Partilhado"] = partilhado_data.copy()
+                    else:
+                        complete_row["Partilhado"] = {
+                            "partilhado": False,
+                            "tecnico_20": "",
+                            "tecnico_30": "",
+                        }
+                elif col_name not in complete_row:
+                    complete_row[col_name] = row_data.get(col_name, DEFAULT_CELL_VALUE)
+
+            self._data.append(complete_row)
+
+        # Atualizar metadados
+        self._quantidade = len(self._data)
+
+        if self._data:
+            recibos: list[int] = [int(row["Recibo"]) \
+                                  for row in self._data if row.get("Recibo")]
+            if recibos:
+                self._recibo_inicio = recibos[0]  # Primeiro recibo na lista
+                self._recibo_fim = recibos[-1]    # Último recibo na lista
+
+        # Recalcular totais
+        self._calculate_totals()
+
+        # Validar todos os recibos para detectar duplicados
+        self._validate_all_recibos()
+
+        # Emitir sinais
+        self.table_rebuilt.emit(
+            self._quantidade, self._recibo_inicio, self._recibo_fim)
+        self.data_changed.emit()
+
+        logger.info(
+            f"Dados carregados: {self._quantidade} \
+                linhas (recibos: {self._recibo_inicio}-{self._recibo_fim})")
+
+    def _validate_all_recibos(self) -> None:
+        """Valida todos os recibos para detectar duplicados após carregar dados."""
+        if not self._recibo_validator or not \
+            self._current_mes or not self._current_ano:
+            return
+
+        for i, row in enumerate(self._data):
+            recibo_num = int(row.get("Recibo", 0))
+            if recibo_num > 0:
+                # Validação completa (detecta duplicados na tabela, mês e histórico)
+                validation_result: ReciboValidationResult = self._recibo_validator.validate_recibo(
+                    recibo_num=recibo_num,
+                    current_table_data=self._data,
+                    mes=self._current_mes,
+                    ano=self._current_ano,
+                    exclude_row=i,
+                    dia_atual=self._current_dia,  # Ignora duplicados do próprio dia
+                )
+                self.recibo_validation_changed.emit(i, validation_result.is_valid)
+
+                if not validation_result.is_valid:
+                    logger.warning(f"Recibo {recibo_num} \
+                                   inválido na linha {i}: {' | '.join(
+                                       validation_result.errors)}")
+
+    def has_duplicate_recibos(self) -> tuple[bool, str]:
+        """Verifica se há recibos duplicados na tabela.
+
+        Returns:
+            (tem_duplicados, mensagem_erro)
+        """
+        if not self._recibo_validator or not self._current_mes or not self._current_ano:
+            return (False, "")
+
+        duplicates: list[str] = []
+
+        for i, row in enumerate(self._data):
+            recibo_num = int(row.get("Recibo", 0))
+            if recibo_num > 0:
+                validation_result: ReciboValidationResult = self._recibo_validator.validate_recibo(
+                    recibo_num=recibo_num,
+                    current_table_data=self._data,
+                    mes=self._current_mes,
+                    ano=self._current_ano,
+                    exclude_row=i,
+                )
+
+                if not validation_result.is_valid:
+                    duplicates.append(f"Linha {i+1}: Recibo {recibo_num} - \
+                                      {', '.join(validation_result.errors)}")
+
+        if duplicates:
+            error_msg: str = "❌ Recibos duplicados encontrados:\n\n" + \
+                "\n".join(duplicates[:5])  # Máximo 5 erros
+            if len(duplicates) > 5:
+                error_msg += f"\n\n... e mais {len(duplicates) - 5} erro(s)"
+            return (True, error_msg)
+
+        return (False, "")
 
     # ==================== FASE 6: ADICIONAR LINHAS ====================
 
@@ -554,7 +699,58 @@ class RecibosTableViewModel(BaseViewModel):
         self.row_added.emit(new_row_index, new_row_data)
         self.data_changed.emit()
 
-        logger.info(f"Linha adicionada: Recibo {new_recibo} (total: {self._quantidade} linhas)")
+        logger.info(f"Linha adicionada: Recibo {new_recibo} \
+                    (total: {self._quantidade} linhas)")
+
+    # ==================== FEATURE 2: ELIMINAR LINHAS ====================
+
+    def delete_row(self, row_index: int) -> bool:
+        """Elimina linha da tabela.
+
+        FEATURE 2: Remove linha dos dados e recalcula totais.
+        A eliminação permanente da BD é feita pelo WizardViewModel ao salvar.
+
+        Args:
+            row_index: Índice da linha a eliminar (nos dados, não na View)
+
+        Returns:
+            True se eliminado com sucesso, False caso contrário
+        """
+        if row_index < 0 or row_index >= len(self._data):
+            logger.error(
+                f"Índice inválido para eliminar: {row_index} \
+                    (total: {len(self._data)})")
+            return False
+
+        # Obter recibo antes de eliminar (para log)
+        recibo_num: str = self._data[row_index].get("Recibo", "?")
+
+        # Remover linha dos dados
+        del self._data[row_index]
+        self._quantidade -= 1
+
+        # Recalcular recibo_inicio e recibo_fim
+        if self._data:
+            recibos: list[int] = [int(
+                row["Recibo"]) for row in self._data if row.get("Recibo")]
+            if recibos:
+                self._recibo_inicio = min(recibos)
+                self._recibo_fim = max(recibos)
+        else:
+            self._recibo_inicio = 0
+            self._recibo_fim = 0
+
+        # Recalcular totais
+        self._calculate_totals()
+
+        # Emitir signals
+        self.row_deleted.emit(row_index, str(recibo_num))
+        self.data_changed.emit()
+
+        logger.info(
+            f"Linha {row_index} eliminada: Recibo {recibo_num} \
+                (restam: {self._quantidade} linhas)")
+        return True
 
     @property
     def row_count(self) -> int:

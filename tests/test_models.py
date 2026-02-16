@@ -3,8 +3,8 @@
 Testa validação, criação, relacionamentos e métodos dos modelos:
 - User
 - Documento
-- MapaAssiduidade
-- MapaAssiduidadeLinha
+- TabelaTaxas
+- TabelaTaxasLinha
 - MapaTaxas
 - MapaTaxasLinha
 """
@@ -21,8 +21,8 @@ from src.common.constants.enums import (
 )
 from src.db.models.mapas import (
     Documento,
-    MapaAssiduidade,
-    MapaAssiduidadeLinha,
+    TabelaTaxas,
+    TabelaTaxasLinha,
     MapaTaxas,
     MapaTaxasLinha,
 )
@@ -135,78 +135,78 @@ class TestDocumento:
         assert documento_dict["confianca_score"] == 85
 
 
-class TestMapaAssiduidade:
-    """Testes para o modelo MapaAssiduidade."""
+class TestTabelaTaxas:
+    """Testes para o modelo TabelaTaxas."""
 
-    def test_criar_mapa_assiduidade_valido(self, session, mapa_assiduidade_data):
-        """Testa criação de mapa de assiduidade com dados válidos."""
-        mapa = MapaAssiduidade(**mapa_assiduidade_data)
-        session.add(mapa)
+    def test_criar_tabela_taxas_valido(self, session, tabela_taxas_data):
+        """Testa criação de tabela de taxas com dados válidos."""
+        tabela = TabelaTaxas(**tabela_taxas_data)
+        session.add(tabela)
         session.commit()
 
-        assert mapa.mes == 1
-        assert mapa.ano == 2024
-        assert mapa.estado == EstadoDocumento.RASCUNHO
-        assert mapa.versao == 1
-        assert mapa.wizard_data == {"stage": 1, "data": "test"}
-        assert mapa.created_at is not None
-        assert mapa.updated_at is not None
-        assert mapa.total_dias_trabalho == 0
-        assert mapa.total_km == Decimal("0")
-        assert mapa.total_ips == 0
-        assert mapa.total_faturacao == Decimal("0")
-        assert mapa.total_ausencias == 0
-        assert mapa.total_ferias == 0
-        assert mapa.total_feriados == 0
+        assert tabela.mes == 1
+        assert tabela.ano == 2024
+        assert tabela.estado == EstadoDocumento.RASCUNHO
+        assert tabela.versao == 1
+        assert tabela.wizard_data == {"stage": 1, "data": "test"}
+        assert tabela.created_at is not None
+        assert tabela.updated_at is not None
+        assert tabela.total_dias_trabalho == 0
+        assert tabela.total_km == Decimal("0")
+        assert tabela.total_ips == 0
+        assert tabela.total_faturacao == Decimal("0")
+        assert tabela.total_ausencias == 0
+        assert tabela.total_ferias == 0
+        assert tabela.total_feriados == 0
 
-    def test_criar_mapa_assiduidade_sem_mes(self, session, mapa_assiduidade_data):
-        """Testa criação de mapa de assiduidade sem mes (deve falhar)."""
-        mapa_assiduidade_data.pop("mes")
-        mapa = MapaAssiduidade(**mapa_assiduidade_data)
+    def test_criar_tabela_taxas_sem_mes(self, session, tabela_taxas_data):
+        """Testa criação de tabela de taxas sem mes (deve falhar)."""
+        tabela_taxas_data.pop("mes")
+        tabela = TabelaTaxas(**tabela_taxas_data)
 
-        session.add(mapa)
+        session.add(tabela)
         with pytest.raises(IntegrityError):
             session.commit()
 
-    def test_criar_mapa_assiduidade_mes_invalido(self, session, mapa_assiduidade_data):
-        """Testa criação de mapa de assiduidade com mes inválido.
+    def test_criar_tabela_taxas_mes_invalido(self, session, tabela_taxas_data):
+        """Testa criação de tabela de taxas com mes inválido.
 
         Nota: A validação de mes/ano é feita no repository,
         não no modelo. Este teste apenas verifica que o modelo
         aceita o valor (validação é de negócio, não de BD).
         """
-        mapa_assiduidade_data["mes"] = 13
-        mapa = MapaAssiduidade(**mapa_assiduidade_data)
+        tabela_taxas_data["mes"] = 13
+        tabela = TabelaTaxas(**tabela_taxas_data)
 
-        session.add(mapa)
+        session.add(tabela)
         # Modelo aceita, validação é no repository
         session.commit()
 
-    def test_calcular_totais(self, session, mapa_assiduidade_data):
+    def test_calcular_totais(self, session, tabela_taxas_data):
         """Testa cálculo de totais a partir das linhas."""
-        mapa = MapaAssiduidade(**mapa_assiduidade_data)
-        session.add(mapa)
+        tabela = TabelaTaxas(**tabela_taxas_data)
+        session.add(tabela)
         session.commit()
 
         # Adiciona linhas de teste
-        linha1 = MapaAssiduidadeLinha(
-            mapa_id=mapa.id,
+        linha1 = TabelaTaxasLinha(
+            mapa_id=tabela.id,
             dia=1,
             dia_semana="Segunda-feira",
             tipo=TipoDiaAssiduidade.TRABALHO,
             ips=8,
-            valor_sem_iva=Decimal("50.0"),
+            valor_com_iva=Decimal("50.0"),
             km=Decimal("50.0"),
         )
-        linha2 = MapaAssiduidadeLinha(
-            mapa_id=mapa.id,
+        linha2 = TabelaTaxasLinha(
+            mapa_id=tabela.id,
             dia=2,
             dia_semana="Terça-feira",
             tipo=TipoDiaAssiduidade.AUSENCIA,
             motivo="Doença",
         )
-        linha3 = MapaAssiduidadeLinha(
-            mapa_id=mapa.id,
+        linha3 = TabelaTaxasLinha(
+            mapa_id=tabela.id,
             dia=3,
             dia_semana="Quarta-feira",
             tipo=TipoDiaAssiduidade.FERIAS,
@@ -216,35 +216,35 @@ class TestMapaAssiduidade:
         session.commit()
 
         # Recalcula totais
-        mapa.recalcular_totais()
+        tabela.recalcular_totais()
 
-        assert mapa.total_dias_trabalho == 1
-        assert mapa.total_km == Decimal("50.0")
-        assert mapa.total_ips == 8
-        assert mapa.total_faturacao == Decimal("50.0")
-        assert mapa.total_ausencias == 1
-        assert mapa.total_ferias == 1
-        assert mapa.total_feriados == 0
+        assert tabela.total_dias_trabalho == 1
+        assert tabela.total_km == Decimal("50.0")
+        assert tabela.total_ips == 8
+        assert tabela.total_faturacao == Decimal("50.0")
+        assert tabela.total_ausencias == 1
+        assert tabela.total_ferias == 1
+        assert tabela.total_feriados == 0
 
 
-class TestMapaAssiduidadeLinha:
-    """Testes para o modelo MapaAssiduidadeLinha."""
+class TestTabelaTaxasLinha:
+    """Testes para o modelo TabelaTaxasLinha."""
 
-    def test_criar_linha_assiduidade_valida(self, session, mapa_assiduidade_data):
-        """Testa criação de linha de assiduidade com dados válidos."""
-        mapa = MapaAssiduidade(**mapa_assiduidade_data)
-        session.add(mapa)
+    def test_criar_linha_taxas_valida(self, session, tabela_taxas_data):
+        """Testa criação de linha de taxas com dados válidos."""
+        tabela = TabelaTaxas(**tabela_taxas_data)
+        session.add(tabela)
         session.commit()
 
-        linha = MapaAssiduidadeLinha(
-            mapa_id=mapa.id,
+        linha = TabelaTaxasLinha(
+            mapa_id=tabela.id,
             dia=1,
             dia_semana="Segunda-feira",
             tipo=TipoDiaAssiduidade.TRABALHO,
             recibo_inicio=100,
             recibo_fim=101,
             ips=8,
-            valor_sem_iva=Decimal("50.0"),
+            valor_com_iva=Decimal("50.0"),
             locais="Lisboa",
             km=Decimal("50.0"),
             observacoes="Teste",
@@ -252,21 +252,21 @@ class TestMapaAssiduidadeLinha:
         session.add(linha)
         session.commit()
 
-        assert linha.mapa_id == mapa.id
+        assert linha.mapa_id == tabela.id
         assert linha.dia == 1
         assert linha.dia_semana == "Segunda-feira"
         assert linha.tipo == TipoDiaAssiduidade.TRABALHO
         assert linha.recibo_inicio == 100
         assert linha.recibo_fim == 101
         assert linha.ips == 8
-        assert linha.valor_sem_iva == Decimal("50.0")
+        assert linha.valor_com_iva == Decimal("50.0")
         assert linha.locais == "Lisboa"
         assert linha.km == Decimal("50.0")
         assert linha.observacoes == "Teste"
 
-    def test_criar_linha_assiduidade_sem_mapa_id(self, session):
-        """Testa criação de linha de assiduidade sem mapa_id (deve falhar)."""
-        linha = MapaAssiduidadeLinha(
+    def test_criar_linha_taxas_sem_tabela_id(self, session):
+        """Testa criação de linha de taxas sem tabela_id (deve falhar)."""
+        linha = TabelaTaxasLinha(
             dia=1,
             dia_semana="Segunda-feira",
             tipo=TipoDiaAssiduidade.TRABALHO,

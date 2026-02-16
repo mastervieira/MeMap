@@ -30,16 +30,16 @@ src/tests/
 - Relacionamentos com usuários
 - Operações CRUD
 
-### MapaAssiduidade
+### TabelaTaxas
 - Criação com validação de mês/ano
 - Cálculo de totais a partir de linhas
 - Transições de estado
 - Relacionamento com linhas
 
-### MapaAssiduidadeLinha
+### TabelaTaxasLinha
 - Criação com tipos de dia
 - Validação de dados
-- Relacionamento com mapa
+- Relacionamento com tabela
 
 ### MapaTaxas
 - Criação e cálculo de totais
@@ -53,7 +53,7 @@ src/tests/
 
 ## Repositórios Testados
 
-### MapaAssiduidadeRepository
+### TabelaTaxasRepository
 - Operações CRUD
 - Validação de dados
 - Gestão de dias (linhas)
@@ -146,10 +146,10 @@ Os testes cobrem:
 ### Fixtures Principais
 - `engine`: Engine SQLite em memória
 - `session`: Sessão de banco de dados para cada teste
-- `mapa_assiduidade_repo`: Repositório de Mapa de Assiduidade
+- `tabela_taxas_repo`: Repositório de Tabela de Taxas
 - `mapa_taxas_repo`: Repositório de Mapa de Taxas
 - `user_data`: Dados de exemplo para usuário
-- `mapa_assiduidade_data`: Dados de exemplo para mapa de assiduidade
+- `tabela_taxas_data`: Dados de exemplo para tabela de taxas
 - `mapa_taxas_data`: Dados de exemplo para mapa de taxas
 - `documento_data`: Dados de exemplo para documento
 

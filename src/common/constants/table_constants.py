@@ -14,7 +14,8 @@ RECIBOS_TABLE_COLUMNS: Final[list[str]] = [
     "Nº IP's",
     "Div.",
     "Partilhado",
-    "Km"
+    "Km",
+    "Ações"  # NOVA: Coluna para ações (eliminar linha)
 ]
 
 # Índices das colunas (para acesso por nome)
@@ -28,6 +29,7 @@ class ReciboColumn:
     DIV: Final[int] = 5
     PARTILHADO: Final[int] = 6
     KM: Final[int] = 7
+    ACOES: Final[int] = 8  # NOVA: Coluna de ações
 
 # Larguras padrão das colunas (em pixels)
 COLUMN_WIDTHS: Final[dict[str, int]] = {
@@ -38,7 +40,8 @@ COLUMN_WIDTHS: Final[dict[str, int]] = {
     "Nº IP's": 120,
     "Div.": 180,
     "Partilhado": 350,  # Aumentado para acomodar widget expandido
-    "Km": 120
+    "Km": 110,  # Reduzido de 120 para 110 (-10px)
+    "Ações": 40  # NOVA: Mini-coluna para ícone de eliminar
 }
 
 # Configuração de células editáveis
@@ -67,3 +70,37 @@ DEFAULT_CELL_VALUE: Final[str] = "0"
 # others
 TOTAL_ROW_LABEL: Final[str] = "TOTAIS"
 ROW_HEIGHT: Final[int] = 50
+
+# ==================== WIZARD CONSTANTS (Phase 2) ====================
+
+# Nomes de dias da semana em português
+DAY_NAMES: Final[dict[int, str]] = {
+    1: "Segunda",
+    2: "Terça",
+    3: "Quarta",
+    4: "Quinta",
+    5: "Sexta",
+    6: "Sábado",
+    7: "Domingo",
+}
+
+# Colunas numéricas da tabela (nomes de colunas)
+NUMERIC_COLUMN_NAMES: Final[list[str]] = [
+    "Setúbal",
+    "Santarém",
+    "Évora",
+    "Nº IP's",
+    "Km",
+]
+
+# Colunas de distritos (para cálculo de totais)
+DISTRICT_COLUMNS: Final[list[str]] = [
+    "Setúbal",
+    "Santarém",
+    "Évora",
+]
+
+# Estrutura esperada de wizard_data (documentação)
+WIZARD_DATA_STRUCTURE: Final[dict[str, object]] = {
+    "dias": {}  # {"13": {"form": {...}, "table": [...]}, "14": {...}}
+}

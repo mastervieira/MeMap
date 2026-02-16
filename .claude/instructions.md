@@ -122,13 +122,12 @@ poetry run pytest tests/ --cov=src
 
 #### Type Hints (OBRIGATÓRIO)
 ```python
-from typing import Optional, List, Dict
 from src.core.models import UserModel
 
 def process_wizard_data(
-    data: Dict[str, str],
+    data: dict[str, str],
     user_id: int,
-) -> Optional[Dict[str, bool]]:
+) -> dict[str, object] | None:
     """Process wizard form data.
 
     Args:

@@ -43,25 +43,25 @@ class WizardValidator(BaseFormValidator):
         Retorna um objeto ValidationResult com os dados limpos ou erro.
         """
         try:
-            # Validação de tipos básicos
+            # Validação de tipos básicos (total_km é opcional)
             if not all([
                 validate_positive_number(raw_data.get("quantidade_recibos")),
                 validate_positive_number(raw_data.get("recibo_inicio")),
-                validate_positive_number(raw_data.get("recibo_fim")),
-                validate_positive_number(raw_data.get("total_km"))
+                validate_positive_number(raw_data.get("recibo_fim"))
             ]):
                 return ValidationResult(
                     is_valid=False,
-                    error_message="Certifique-se de que todos os campos numéricos são positivos."
+                    error_message="Certifique-se de que Quantidade, Recibo Início e Recibo Fim são números positivos."
                 )
 
             # Conversão segura de dados
-            qtd = safe_int_convert(raw_data["quantidade_recibos"])
-            inicio = safe_int_convert(raw_data["recibo_inicio"])
-            fim = safe_int_convert(raw_data["recibo_fim"])
-            km = safe_float_convert(raw_data["total_km"])
+            qtd: int | None = safe_int_convert(raw_data["quantidade_recibos"])
+            inicio: int | None = safe_int_convert(raw_data["recibo_inicio"])
+            fim: int | None = safe_int_convert(raw_data["recibo_fim"])
+            # total_km é opcional - usa 0 se vazio
+            km: float = safe_float_convert(raw_data.get("total_km", "0")) or 0.0
 
-            if None in (qtd, inicio, fim, km):
+            if None in (qtd, inicio, fim):
                 return ValidationResult(
                     is_valid=False,
                     error_message="Erro ao converter valores numéricos."

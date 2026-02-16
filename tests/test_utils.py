@@ -84,10 +84,10 @@ class TestExcelValidator:
 class TestPDFExporter:
     """Testes para PDFExporter."""
 
-    def test_exportar_mapa_assiduidade_pdf(self):
-        """Testa exportação de mapa de assiduidade para PDF."""
+    def test_exportar_tabela_taxas_pdf(self):
+        """Testa exportação de tabela de taxas para PDF."""
         # Cria dados de teste
-        mapa_data = {
+        tabela_data = {
             "mes": 1,
             "ano": 2024,
             "total_dias_trabalho": 20,
@@ -100,7 +100,7 @@ class TestPDFExporter:
                     "dia_semana": "Segunda-feira",
                     "tipo": "trabalho",
                     "ips": 8,
-                    "valor_sem_iva": 100.0,
+                    "valor_com_iva": 100.0,
                     "km": 25.0,
                     "locais": "Lisboa",
                 }
@@ -108,10 +108,10 @@ class TestPDFExporter:
         }
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_path = os.path.join(temp_dir, "mapa_assiduidade.pdf")
+            output_path = os.path.join(temp_dir, "tabela_taxas.pdf")
 
             exporter = PDFExporter()
-            resultado = exporter.exportar_mapa_assiduidade(mapa_data, output_path)
+            resultado = exporter.exportar_mapa_taxas(tabela_data, output_path)
 
             assert resultado["sucesso"] is True
             assert os.path.exists(output_path)
@@ -154,11 +154,11 @@ class TestPDFExporter:
 
     def test_exportar_pdf_erro_arquivo(self):
         """Testa erro ao exportar PDF para caminho inválido."""
-        mapa_data = {"mes": 1, "ano": 2024}
+        tabela_data = {"mes": 1, "ano": 2024}
 
         # Tenta exportar para um caminho inválido
         exporter = PDFExporter()
-        resultado = exporter.exportar_mapa_assiduidade(mapa_data, "/invalid/path/file.pdf")
+        resultado = exporter.exportar_mapa_taxas(tabela_data, "/invalid/path/file.pdf")
 
         assert resultado["sucesso"] is False
         assert len(resultado["erro"]) > 0
@@ -251,7 +251,7 @@ class TestUtilsIntegracao:
             os.unlink(temp_path)
 
         # 2. Exportação para PDF
-        mapa_data = {
+        tabela_data = {
             "mes": 1,
             "ano": 2024,
             "total_dias_trabalho": 10,
@@ -259,10 +259,10 @@ class TestUtilsIntegracao:
         }
 
         with tempfile.TemporaryDirectory() as temp_dir:
-            output_path = os.path.join(temp_dir, "mapa.pdf")
+            output_path = os.path.join(temp_dir, "tabela.pdf")
 
             exporter = PDFExporter()
-            resultado_exportacao = exporter.exportar_mapa_assiduidade(mapa_data, output_path)
+            resultado_exportacao = exporter.exportar_mapa_taxas(tabela_data, output_path)
 
             assert resultado_exportacao["sucesso"] is True
             assert os.path.exists(output_path)

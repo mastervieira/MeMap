@@ -69,12 +69,22 @@ class WizardPage1(QWidget):
         self._viewmodel: WizardViewModel = viewmodel
         self.recibos_table: RecibosTableWidget | None = None
         self.theme_manager = ThemeManager()
+        self._current_date: QDate | None = None  # Data atual sendo editada
+        self._is_loading_data: bool = False  # Flag para prevenir auto-updates durante carregamento
 
         # Conecta sinais do ViewModel → View
         self._viewmodel.resumo_updated.connect(self.update_resumo_financeiro)
         self._viewmodel.validation_error.connect(self._show_validation_error)
 
         self._init_ui()
+
+    def set_current_date(self, date: QDate) -> None:
+        """Define a data atual sendo editada.
+
+        Args:
+            date: Data do dia atual
+        """
+        self._current_date = date
 
     def _init_ui(self) -> None:
         """Inicializa a interface com duas grids (superior e inferior)."""
@@ -141,9 +151,6 @@ class WizardPage1(QWidget):
         self.input_fim.textChanged.connect(
             lambda text: self._viewmodel.set_form_field("recibo_fim", text)
         )
-        self.input_km.textChanged.connect(
-            lambda text: self._viewmodel.set_form_field("total_km", text)
-        )
 
         # Inicializa o resumo financeiro com valores zerados
         self.update_resumo_financeiro(0.0, 0.0)
@@ -151,7 +158,7 @@ class WizardPage1(QWidget):
     def _setup_left_column(self) -> None:
         """Configura a coluna esquerda da grid superior (2 linhas úteis)."""
 
-        # 1ª Linha: Recibos (Quantidade, Início, Fim) + Serv. Interno + Total KM
+        # 1ª Linha: Recibos (Quantidade, Início, Fim) + Serv. Interno + Botão Limpar
         row1_container = QWidget()
         row1_layout = QHBoxLayout(row1_container)
         row1_layout.setContentsMargins(0, 0, 0, 0)
@@ -172,10 +179,29 @@ class WizardPage1(QWidget):
         self.checkbox_serv_interno = QCheckBox("Serv. Interno")
         row1_layout.addWidget(self.checkbox_serv_interno)
 
-        # Total KM (movido da linha 3)
-        self.input_km: QLineEdit = self._create_input(
-            "Total KM", row1_layout
-            )
+        # Botão Limpar Dados (substitui Total KM) - apenas ícone, sem fundo
+        self.btn_limpar = QPushButton("🗑️")
+        self.btn_limpar.setFixedSize(35, 30)
+        self.btn_limpar.setToolTip("Limpar todos os dados do formulário e tabela")
+        self.btn_limpar.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                font-size: 18px;
+                padding: 2px;
+                color: #757575;
+            }
+            QPushButton:hover {
+                background-color: #ffebee;
+                border-radius: 4px;
+                color: #d32f2f;
+            }
+            QPushButton:pressed {
+                background-color: #ffcdd2;
+            }
+        """)
+        self.btn_limpar.clicked.connect(self._on_limpar_clicked)
+        row1_layout.addWidget(self.btn_limpar)
 
         row1_layout.addStretch()
 
@@ -398,14 +424,137 @@ class WizardPage1(QWidget):
 
         logger.info(f"Serviço Interno: {'ATIVADO' if is_checked else 'DESATIVADO'}")
 
+    def _on_limpar_clicked(self) -> None:
+        """Handler quando botão Limpar é clicado.
+
+        NOVO: Elimina o dia da BD imediatamente e volta ao estado inicial.
+        O dia fica como se nunca tivesse sido criado.
+        """
+        from PySide6.QtWidgets import QMessageBox
+        import asyncio
+
+        # Confirmar com usuário
+        reply = QMessageBox.question(
+            self,
+            "Confirmar Limpeza",
+            "Tem certeza que deseja limpar todos os dados?\n\n"
+            "Esta ação irá:\n"
+            "• Limpar todos os campos do formulário\n"
+            "• Limpar toda a tabela de recibos\n"
+            "• ELIMINAR IMEDIATAMENTE os dados da BD\n"
+            "• O dia volta ao estado inicial (novo)\n\n"
+            "Esta ação não pode ser revertida!",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Chamar método async
+        loop = asyncio.get_event_loop()
+        loop.create_task(self._limpar_async())
+
+    async def _limpar_async(self) -> None:
+        """Método async para limpar dados e eliminar da BD."""
+        from src.frontend.components.notifications import NotificationManager
+
+        # 1. Eliminar dia da BD (passar data atual)
+        success, message = await self._viewmodel.delete_current_day(self._current_date)
+
+        if not success:
+            NotificationManager.instance().error(
+                f"Não foi possível eliminar o dia da BD: {message}"
+            )
+            return
+
+        # 2. Limpar UI (formulário e tabela)
+        self.blockSignals(True)
+
+        # Limpar campos do formulário
+        self.input_qtd.clear()
+        self.input_inicio.clear()
+        self.input_fim.clear()
+        self.checkbox_serv_interno.setChecked(False)
+        self.checkbox_gasoleo.setChecked(False)
+        self.input_gasoleo_valor.clear()
+        self.input_gasoleo_litros.clear()
+
+        # Limpar tabela
+        if self.recibos_table:
+            self.recibos_table.clear_table()
+            self.recibos_table.setVisible(False)
+
+        self.blockSignals(False)
+
+        logger.info("✅ Dia eliminado da BD e UI limpa")
+
+        from src.frontend.components.notifications import NotificationManager
+        NotificationManager.instance().success(
+            f"{message} O dia volta ao estado inicial."
+        )
+
     def _on_table_data_changed(self) -> None:
-        """Callback quando dados da tabela mudam."""
+        """Callback quando dados da tabela mudam.
+
+        NOVA FUNCIONALIDADE: Auto-atualiza campos do formulário (quantidade,
+        início, fim) baseado nos dados reais da tabela.
+        """
+        # CRÍTICO: Ignorar mudanças durante carregamento de dados
+        # Evita auto-updates com dados transitórios/incorretos
+        if self._is_loading_data:
+            logger.debug("⏭️ Auto-update ignorado (carregamento em progresso)")
+            return
+
         # Atualiza ViewModel com novos dados da tabela
         if self.recibos_table:
             table_data: list[dict[str, str | dict[str, str | bool]]] = self.recibos_table.get_table_data()
             self._viewmodel.set_table_data(table_data)
+
+            # NOVA FUNCIONALIDADE: Recalcular campos do formulário baseado na tabela
+            self._update_form_from_table(table_data)
+
             # Recalcula resumo financeiro
             self._viewmodel.calculate_resumo_financeiro()
+
+    def _update_form_from_table(self, table_data: list[dict[str, str | dict[str, str | bool]]]) -> None:
+        """Atualiza campos do formulário baseado nos dados da tabela.
+
+        Recalcula quantidade, recibo início e recibo fim automaticamente
+        quando a tabela é editada manualmente.
+
+        Args:
+            table_data: Dados atuais da tabela
+        """
+        if not table_data:
+            return
+
+        # Extrair números de recibos válidos (não vazios e não "0")
+        recibos: list[int] = []
+        for row in table_data:
+            recibo_str = row.get("Recibo", "")
+            if recibo_str and str(recibo_str).strip() and str(recibo_str) != "0":
+                try:
+                    recibo_num = int(recibo_str)
+                    if recibo_num > 0:
+                        recibos.append(recibo_num)
+                except (ValueError, TypeError):
+                    continue
+
+        if not recibos:
+            return
+
+        # Calcular valores
+        quantidade = len(recibos)
+        recibo_inicio = min(recibos)
+        recibo_fim = max(recibos)
+
+        # Atualizar campos do formulário
+        self.input_qtd.setText(str(quantidade))
+        self.input_inicio.setText(str(recibo_inicio))
+        self.input_fim.setText(str(recibo_fim))
+
+        logger.info(f"Formulário auto-atualizado: Qtd={quantidade}, Início={recibo_inicio}, Fim={recibo_fim}")
 
     def update_resumo_financeiro(self, premio: float, gastos: float) -> None:
         """Atualiza o resumo financeiro com os valores de prémio e gastos.
@@ -439,7 +588,6 @@ class WizardPage1(QWidget):
         self._viewmodel.set_form_field("quantidade_recibos", self.input_qtd.text())
         self._viewmodel.set_form_field("recibo_inicio", self.input_inicio.text())
         self._viewmodel.set_form_field("recibo_fim", self.input_fim.text())
-        self._viewmodel.set_form_field("total_km", self.input_km.text())
         self._viewmodel.set_form_field("servico_interno", self.checkbox_serv_interno.isChecked())
         self._viewmodel.set_form_field("gasoleo", self.checkbox_gasoleo.isChecked())
         self._viewmodel.set_form_field(
@@ -503,10 +651,10 @@ class GuidedFormWizard(QWidget):
 
         # FASE 2.1: Inicializar Repository e injetar no ViewModel
         from src.db.session_manager import SessionManager
-        from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+        from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 
         session: Session = SessionManager.get_instance().get_session()
-        repository = MapaAssiduidadeRepository(session)
+        repository = TabelaTaxasRepository(session)
         self._viewmodel.set_repository(repository)
 
         # Theme manager
@@ -630,55 +778,61 @@ class GuidedFormWizard(QWidget):
         qtd = self._viewmodel.get_form_field("quantidade_recibos", "")
         inicio = self._viewmodel.get_form_field("recibo_inicio", "")
         fim = self._viewmodel.get_form_field("recibo_fim", "")
-        km = self._viewmodel.get_form_field("total_km", "")
         servico_interno = self._viewmodel.get_form_field("servico_interno", False)
         gasoleo = self._viewmodel.get_form_field("gasoleo", False)
 
-        # Atualizar campos da UI
-        self.page1.input_qtd.setText(str(qtd))
-        self.page1.input_inicio.setText(str(inicio))
-        self.page1.input_fim.setText(str(fim))
-        self.page1.input_km.setText(str(km))
-        self.page1.checkbox_serv_interno.setChecked(servico_interno)
-        self.page1.checkbox_gasoleo.setChecked(gasoleo)
+        # CRÍTICO: Bloquear signals para evitar reconstrução da tabela durante carregamento
+        self.page1.input_qtd.blockSignals(True)
+        self.page1.input_inicio.blockSignals(True)
+        self.page1.input_fim.blockSignals(True)
+        self.page1.checkbox_serv_interno.blockSignals(True)
+        self.page1.checkbox_gasoleo.blockSignals(True)
 
-        logger.debug("Dados do formulário carregados na UI")
+        try:
+            # Atualizar campos da UI
+            self.page1.input_qtd.setText(str(qtd))
+            self.page1.input_inicio.setText(str(inicio))
+            self.page1.input_fim.setText(str(fim))
+            self.page1.checkbox_serv_interno.setChecked(servico_interno)
+            self.page1.checkbox_gasoleo.setChecked(gasoleo)
+
+            logger.debug(f"✅ Dados do formulário carregados na UI (signals bloqueados): Qtd={qtd}, Inicio={inicio}, Fim={fim}")
+        finally:
+            # Desbloquear signals
+            self.page1.input_qtd.blockSignals(False)
+            self.page1.input_inicio.blockSignals(False)
+            self.page1.input_fim.blockSignals(False)
+            self.page1.checkbox_serv_interno.blockSignals(False)
+            self.page1.checkbox_gasoleo.blockSignals(False)
 
     def _load_table_data_to_ui(self) -> None:
-        """Carrega dados da tabela do ViewModel para a UI."""
+        """Carrega dados da tabela do ViewModel para a UI.
+
+        CORRIGIDO: Usa load_data_from_saved para preservar recibos exatos,
+        incluindo duplicados, em vez de rebuild_table que cria sequência.
+        """
         table_data = self._viewmodel.get_table_data()
 
         if not table_data:
             logger.debug("Nenhum dado de tabela para carregar")
             return
 
-        # Reconstruir tabela com dados carregados
+        # Carregar dados preservando recibos exatos (incluindo duplicados)
         if self.page1.recibos_table:
-            # Extrair quantidade e range de recibos dos dados
-            recibos: list[int] = [int(row.get("Recibo", 0)) for row in table_data if row.get("Recibo")]
+            # Usar método específico para carregar dados salvos
+            self.page1.recibos_table.viewmodel.load_data_from_saved(table_data)
 
-            if recibos:
-                quantidade: int = len(recibos)
-                recibo_inicio: int = min(recibos)
-                recibo_fim: int = max(recibos)
+            # CRÍTICO: Tornar tabela visível após carregar dados
+            self.page1.recibos_table.setVisible(True)
 
-                # Rebuild tabela
-                self.page1.recibos_table.rebuild_table(quantidade, recibo_inicio, recibo_fim)
-
-                # Preencher dados célula por célula
-                for i, row_data in enumerate(table_data):
-                    for col_name, value in row_data.items():
-                        if col_name != "Partilhado":  # Partilhado tem tratamento especial
-                            self.page1.recibos_table.viewmodel.set_cell_value(i, col_name, str(value))
-
-                logger.info(f"Tabela reconstruída com {quantidade} recibos da BD")
+            quantidade = len(table_data)
+            logger.info(f"Tabela carregada com {quantidade} linhas exatas da BD (preservando duplicados) e tornada VISÍVEL")
 
     def _clear_form(self) -> None:
         """Limpa todos os campos do formulário."""
         self.page1.input_qtd.clear()
         self.page1.input_inicio.clear()
         self.page1.input_fim.clear()
-        self.page1.input_km.clear()
         self.page1.checkbox_serv_interno.setChecked(False)
         self.page1.checkbox_gasoleo.setChecked(False)
         logger.debug("Formulário limpo")
@@ -692,11 +846,11 @@ class GuidedFormWizard(QWidget):
 
     @Slot(QDate, bool)
     def _on_day_saved(self, date: QDate, success: bool) -> None:
-        """Callback quando dia é salvo no ViewModel.
+        """Callback quando dia é salvo ou eliminado no ViewModel.
 
         Args:
-            date: Data salva
-            success: Se salvamento foi bem-sucedido
+            date: Data salva/eliminada
+            success: True se salvo, False se eliminado
         """
         if success:
             self._apply_saved_style()
@@ -704,6 +858,12 @@ class GuidedFormWizard(QWidget):
             date_str = date.toString("dd/MM/yyyy")
             self.date_label.setText(f"✅ {date_str} - Salvo com sucesso")
             logger.info(f"Feedback visual: Dia {date_str} salvo")
+        else:
+            # Dia foi eliminado - resetar para estilo padrão
+            self._apply_default_style()
+            date_str = date.toString("dd/MM/yyyy")
+            self.date_label.setText(f"📅 {date_str}")
+            logger.info(f"Feedback visual: Dia {date_str} resetado para estado inicial")
 
     @Slot(bool)
     def _on_data_modified(self, has_changes: bool) -> None:
@@ -766,7 +926,6 @@ class GuidedFormWizard(QWidget):
             self._viewmodel.set_form_field("quantidade_recibos", self.page1.input_qtd.text())
             self._viewmodel.set_form_field("recibo_inicio", self.page1.input_inicio.text())
             self._viewmodel.set_form_field("recibo_fim", self.page1.input_fim.text())
-            self._viewmodel.set_form_field("total_km", self.page1.input_km.text())
             self._viewmodel.set_form_field("servico_interno", self.page1.checkbox_serv_interno.isChecked())
             self._viewmodel.set_form_field("gasoleo", self.page1.checkbox_gasoleo.isChecked())
             logger.info(f"🟡 DEBUG ASYNC: Campos atualizados. Qtd={self.page1.input_qtd.text()}, Inicio={self.page1.input_inicio.text()}")
@@ -796,13 +955,30 @@ class GuidedFormWizard(QWidget):
                 date_str = self._selected_date.toString("dd/MM/yyyy")
                 self.date_label.setText(f"✅ {date_str} - Salvo")
                 logger.info(f"✅ DEBUG ASYNC: Feedback visual aplicado!")
+
+                # Mostrar notificação de sucesso
+                from src.frontend.components.notifications import NotificationManager
+                NotificationManager.instance().success(
+                    f"Dia {date_str} salvo com sucesso!"
+                )
             else:
                 logger.error(f"🔴🔴🔴 DEBUG ASYNC: SALVAMENTO FALHOU! 🔴🔴🔴")
                 logger.error(f"❌ Erro ao salvar: {message}")
 
+                # CRÍTICO: Mostrar diálogo de erro ao utilizador
+                from src.frontend.components.notifications import NotificationManager
+                NotificationManager.instance().error(message, duration=6000)
+
         except Exception as e:
             logger.error(f"🔴🔴🔴 DEBUG ASYNC: EXCEÇÃO CAPTURADA! 🔴🔴🔴")
             logger.error(f"❌ Exceção ao salvar dia: {e}", exc_info=True)
+
+            # Mostrar erro ao utilizador
+            from src.frontend.components.notifications import NotificationManager
+            NotificationManager.instance().error(
+                f"Erro ao salvar o dia: {str(e)}. Verifique os logs.",
+                duration=6000
+            )
 
         finally:
             # Reabilitar botão
@@ -828,9 +1004,14 @@ class GuidedFormWizard(QWidget):
         # FASE 2: Guardar data selecionada
         self._selected_date = date
 
-        # FASE 2.6: Atualizar mês/ano no RecibosTableViewModel para validação
+        # FASE 2.6: Atualizar data atual no RecibosTableViewModel para validação
+        # CRÍTICO: Passa dia para ignorar duplicados do próprio dia ao editar
         if self.page1.recibos_table:
-            self.page1.recibos_table.viewmodel.set_current_date(date.month(), date.year())
+            self.page1.recibos_table.viewmodel.set_current_date(
+                date.month(),
+                date.year(),
+                date.day()  # Ignora duplicados do próprio dia
+            )
 
         if self._is_loading:
             logger.warning("Carregamento já em curso. Ignorando novo pedido.")
@@ -856,11 +1037,21 @@ class GuidedFormWizard(QWidget):
                 # Dados carregados com sucesso
                 logger.info(f"Dados carregados: {message}")
 
-                # Atualizar formulário com dados carregados
-                self._load_form_data_to_ui()
+                # CRÍTICO: Ativar flag para prevenir auto-updates durante carregamento
+                self.page1._is_loading_data = True
 
-                # Atualizar tabela com dados carregados
-                self._load_table_data_to_ui()
+                try:
+                    # Atualizar formulário com dados carregados
+                    self._load_form_data_to_ui()
+
+                    # Atualizar tabela com dados carregados
+                    self._load_table_data_to_ui()
+
+                    # Definir data atual no Page1 (para botão limpar)
+                    self.page1.set_current_date(date)
+                finally:
+                    # CRÍTICO: Desativar flag após carregamento completo
+                    self.page1._is_loading_data = False
 
                 self.loading_progress.emit(80)
 
@@ -880,6 +1071,9 @@ class GuidedFormWizard(QWidget):
                 # Limpar formulário e tabela
                 self._clear_form()
                 self._clear_table()
+
+                # Definir data atual no Page1 (para botão limpar)
+                self.page1.set_current_date(date)
 
                 # Aplicar estilo padrão
                 self._apply_default_style()

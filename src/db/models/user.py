@@ -62,7 +62,7 @@ class User(Base):
 
     # Relacionamentos com mapas serão adicionados quando tecnico_id for implementado
     # mapas_taxas = relationship("MapaTaxas", back_populates="tecnico")
-    # mapas_assiduidade = relationship("MapaAssiduidade", back_populates="tecnico")
+    # tabela_taxas = relationship("TabelaTaxas", back_populates="tecnico")
     # mapas_contas = relationship("MapaConta", back_populates="tecnico")
 
     pf_documentos: Mapped[list["Documento"]] = relationship(

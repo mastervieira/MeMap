@@ -18,7 +18,8 @@ from src.frontend.viewmodels.base_view_model import BaseViewModel
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-PageType = Literal["dashboard", "wizard", "calendar", "tasks", "analytics", "settings"]
+PageType = Literal[
+    "dashboard", "wizard", "calendar", "tasks", "analytics", "settings"]
 
 
 class MainViewModel(BaseViewModel):

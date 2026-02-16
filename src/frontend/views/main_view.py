@@ -3,9 +3,8 @@ Main View da aplicação com sidebar, navbar e footer.
 Implementa a arquitetura principal da interface com nova estrutura de grids.
 """
 
-from PySide6.QtCore import Qt, QSize, Signal, Slot
+from PySide6.QtCore import  QSize, Signal, Slot
 from PySide6.QtWidgets import (
-    QCalendarWidget,
     QFrame,
     QGridLayout,
     QHBoxLayout,
@@ -19,13 +18,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from common.themes.colors import ColorPalette
 from src.common.themes import Theme, ThemeManager
 from src.frontend.styles.styles import StyleManager
 from src.frontend.styles.component_styles import (
     SidebarStyles,
     FooterStyles,
     DashboardPageStyles,
-    CalendarWidgetStyles,
 )
 from src.frontend.views.wizard_view import GuidedFormWizard
 from src.frontend.views.calendar_dashboard import CalendarDashboard
@@ -37,7 +36,7 @@ from src.frontend.viewmodels import MainViewModel
 class SidebarButton(QPushButton):
     """Botão customizado para o sidebar."""
 
-    def __init__(self, text: str, icon: str = "", parent=None):
+    def __init__(self, text: str, icon: str = "", parent=None) -> None:
         super().__init__(text, parent)
         self.setProperty("sidebar_button", True)
         # setCursor removido - usa stylesheet para cursor pointer
@@ -207,7 +206,7 @@ class Navbar(QFrame):
     def _apply_theme(self) -> None:
         """Aplica o tema atual ao navbar."""
         # Obtém a paleta do tema atual
-        palette = self._theme_manager.current_palette
+        palette: ColorPalette = self._theme_manager.current_palette
 
         # Aplica estilos dinâmicos baseados no tema
         self.page_title.setStyleSheet(f"""
@@ -604,11 +603,11 @@ class MainView(QMainWindow):
 
         # FASE 3.3: Criar CalendarViewModel compartilhado e conectar signals
         from src.db.session_manager import SessionManager
-        from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+        from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
         from src.frontend.viewmodels import CalendarViewModel
 
         session = SessionManager.get_instance().get_session()
-        repository = MapaAssiduidadeRepository(session)
+        repository = TabelaTaxasRepository(session)
         self.calendar_viewmodel = CalendarViewModel(repository)
 
         # Injetar ViewModel no CalendarDashboard
@@ -617,7 +616,7 @@ class MainView(QMainWindow):
 
         # Conectar signal day_saved do Wizard ao Calendar
         self.pages["wizard"]._viewmodel.day_saved.connect(
-            lambda date, success: self.calendar_viewmodel.mark_day_saved(date) if success else None
+            lambda date, success: self.calendar_viewmodel.mark_day_saved(date) if success else self.calendar_viewmodel.mark_day_deleted(date)
         )
 
         # Conectar signal data_modified do Wizard ao Calendar
@@ -634,6 +633,7 @@ class MainView(QMainWindow):
 
         # Conecta o progresso do Wizard ao Footer
         self.pages["wizard"].loading_progress.connect(self.footer.set_progress)
+        self.pages["wizard"]._viewmodel.saving_progress.connect(self.footer.set_progress)
 
         # Conecta sinais
         self._connect_signals()

@@ -257,7 +257,7 @@ class PDFExporter:
                     linha.get('dia_semana', ''),
                     linha.get('tipo', ''),
                     str(linha.get('ips', '')),
-                    f"{linha.get('valor_sem_iva', 0):.2f}",
+                    f"{linha.get('valor_com_iva', 0):.2f}",
                     f"{linha.get('km', 0):.2f}",
                     linha.get('locais', '') or ''
                 ])

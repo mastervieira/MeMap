@@ -15,10 +15,11 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QDate, Signal
 from PySide6.QtGui import QColor
 
+from src.db.models.mapas import TabelaTaxas
 from src.frontend.viewmodels.base_view_model import BaseViewModel
 
 if TYPE_CHECKING:
-    from src.repositories.assiduidade_repository import MapaAssiduidadeRepository
+    from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -41,14 +42,14 @@ class CalendarViewModel(BaseViewModel):
     # Signals
     day_states_updated = Signal()  # Quando estados dos dias mudam
 
-    def __init__(self, repository: MapaAssiduidadeRepository) -> None:
+    def __init__(self, repository: TabelaTaxasRepository) -> None:
         """Inicializa o CalendarViewModel.
 
         Args:
             repository: Repository para acessar dados de assiduidade
         """
         super().__init__()
-        self._repository: MapaAssiduidadeRepository = repository
+        self._repository: TabelaTaxasRepository = repository
 
         # Conjuntos de dias por estado
         # Formato: {(year, month, day)}
@@ -70,7 +71,8 @@ class CalendarViewModel(BaseViewModel):
         """
         try:
             # Buscar mapa do mês
-            mapa = self._repository.buscar_por_mes_ano(month, year)
+            mapa: TabelaTaxas | None = self._repository.buscar_por_mes_ano(
+                month, year)
 
             if not mapa:
                 logger.debug(f"Nenhum mapa encontrado para {month}/{year}")
@@ -80,15 +82,20 @@ class CalendarViewModel(BaseViewModel):
             for linha in mapa.linhas:
                 key: tuple[int, int, int] = (year, month, linha.dia)
                 self._saved_days.add(key)
-                logger.debug(f"Dia {linha.dia}/{month}/{year} marcado como salvo")
+                logger.debug(
+                    f"Dia {linha.dia}/{month}/{year} marcado como salvo")
 
             # Emitir signal para atualizar UI
             self.day_states_updated.emit()
 
-            logger.info(f"Estados do mês {month}/{year} carregados: {len(mapa.linhas)} dias")
+            logger.info(
+                f"Estados do mês {month}/{year} \
+                    carregados: {len(mapa.linhas)} dias")
 
         except Exception as e:
-            logger.error(f"Erro ao carregar estados do mês {month}/{year}: {e}", exc_info=True)
+            logger.error(
+                f"Erro ao carregar estados do mês {month}/{year}: {e}",
+                exc_info=True)
 
     def mark_day_modified(self, date: QDate) -> None:
         """Marca dia como modificado (amarelo).
@@ -107,7 +114,8 @@ class CalendarViewModel(BaseViewModel):
         # Emitir signal
         self.day_states_updated.emit()
 
-        logger.debug(f"Dia {date.toString('dd/MM/yyyy')} marcado como modificado")
+        logger.debug(
+            f"Dia {date.toString('dd/MM/yyyy')} marcado como modificado")
 
     def mark_day_saved(self, date: QDate) -> None:
         """Marca dia como salvo (verde).
@@ -127,6 +135,25 @@ class CalendarViewModel(BaseViewModel):
         self.day_states_updated.emit()
 
         logger.info(f"Dia {date.toString('dd/MM/yyyy')} marcado como salvo")
+
+    def mark_day_deleted(self, date: QDate) -> None:
+        """Marca dia como eliminado (remove de salvos e modificados).
+
+        Args:
+            date: Data a marcar como eliminada
+        """
+        key: tuple[int, int, int] = (date.year(), date.month(), date.day())
+
+        # Remover de ambos os conjuntos
+        self._saved_days.discard(key)
+        self._modified_days.discard(key)
+
+        # Emitir signal
+        self.day_states_updated.emit()
+
+        logger.info(
+            f"Dia {date.toString('dd/MM/yyyy')} \
+                marcado como eliminado (removido do calendário)")
 
     def get_day_color(self, date: QDate) -> QColor | None:
         """Retorna cor baseada no estado do dia.
@@ -158,7 +185,7 @@ class CalendarViewModel(BaseViewModel):
         Returns:
             True se dia está salvo
         """
-        key = (date.year(), date.month(), date.day())
+        key: tuple[int, int, int] = (date.year(), date.month(), date.day())
         return key in self._saved_days
 
     def clear_month(self, year: int, month: int) -> None:

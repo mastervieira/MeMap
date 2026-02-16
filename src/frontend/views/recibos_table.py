@@ -12,12 +12,15 @@ import logging
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QFont, QKeyEvent
 from PySide6.QtWidgets import (
+    QHBoxLayout,
     QHeaderView,
+    QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QWidget,
+    QMessageBox
 )
-
+from src.common.normalizers.decimal_normalizer import decimal_to_float
 from src.common.constants import (
     COLUMN_WIDTHS,
     EDITABLE_COLUMNS,
@@ -26,6 +29,7 @@ from src.common.constants import (
     ReciboColumn,
 )
 from src.common.constants.table_constants import ROW_HEIGHT, TOTAL_ROW_LABEL
+from src.frontend.components.notifications import NotificationManager
 from src.frontend.components.partilhado_widget import PartilhadoWidget
 from src.frontend.viewmodels.recibos_table_viewmodel import RecibosTableViewModel
 
@@ -63,16 +67,20 @@ class RecibosTableWidget(QTableWidget):
         self._servico_interno_row_index: int = -1  # FASE 4: índice da linha de serviço interno
 
         # Injeta ou cria ViewModel
-        self._viewmodel: RecibosTableViewModel = viewmodel if viewmodel else RecibosTableViewModel()
+        self._viewmodel: RecibosTableViewModel = viewmodel if viewmodel \
+        else RecibosTableViewModel()
 
         # Conecta sinais do ViewModel → View
         self._viewmodel.data_changed.connect(self._on_viewmodel_data_changed)
         self._viewmodel.totals_updated.connect(self._update_totals_display)
         self._viewmodel.table_rebuilt.connect(self._on_table_rebuilt)
-        self._viewmodel.servico_interno_changed.connect(self._on_servico_interno_changed)
-        self._viewmodel.recibo_sequence_updated.connect(self._update_recibo_cells)
+        self._viewmodel.servico_interno_changed.connect(
+            self._on_servico_interno_changed)
+        self._viewmodel.recibo_sequence_updated.connect(
+            self._update_recibo_cells)
         self._viewmodel.row_added.connect(self._on_row_added)
-        self._viewmodel.recibo_validation_changed.connect(self._on_recibo_validation_changed)
+        self._viewmodel.recibo_validation_changed.connect(
+            self._on_recibo_validation_changed)
 
         # Aumenta fonte em 15%
         current_font: QFont = self.font()
@@ -159,7 +167,12 @@ class RecibosTableWidget(QTableWidget):
 
         # A UI será atualizada pelo sinal table_rebuilt
 
-    def _on_table_rebuilt(self, quantidade: int, recibo_inicio: int, recibo_fim: int) -> None:
+    def _on_table_rebuilt(
+            self,
+            quantidade: int,
+            recibo_inicio: int,
+            recibo_fim: int
+            ) -> None:
         """Callback quando ViewModel reconstrói dados.
 
         FASE 4 (CORRIGIDO): Respeita estado de Serviço Interno.
@@ -169,7 +182,7 @@ class RecibosTableWidget(QTableWidget):
         self.blockSignals(True)
 
         # Verificar se Serviço Interno está ativo
-        servico_interno_ativo = self._viewmodel.is_servico_interno()
+        servico_interno_ativo: bool = self._viewmodel.is_servico_interno()
 
         # Limpa tabela
         self.setRowCount(0)
@@ -185,8 +198,9 @@ class RecibosTableWidget(QTableWidget):
             servico_item = QTableWidgetItem("🔧 SERVIÇO INTERNO")
             servico_item.setBackground(QColor("#ffe082"))
             servico_item.setForeground(QColor("#F57C00"))
-            servico_item.setFlags(servico_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            font = servico_item.font()
+            servico_item.setFlags(
+                servico_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            font: QFont = servico_item.font()
             font.setBold(True)
             font.setPointSize(10)
             servico_item.setFont(font)
@@ -212,8 +226,15 @@ class RecibosTableWidget(QTableWidget):
             # Coluna Partilhado: não editável
             partilhado_item = QTableWidgetItem("")
             partilhado_item.setBackground(QColor("#ffe082"))
-            partilhado_item.setFlags(partilhado_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            partilhado_item.setFlags(
+                partilhado_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.setItem(0, ReciboColumn.PARTILHADO, partilhado_item)
+
+            # Coluna Ações: não editável (serviço interno não pode ser eliminado)
+            acoes_item = QTableWidgetItem("")
+            acoes_item.setBackground(QColor("#ffe082"))
+            acoes_item.setFlags(acoes_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.setItem(0, ReciboColumn.ACOES, acoes_item)
 
             row_offset = 1  # Linhas de dados começam em 1
 
@@ -223,10 +244,31 @@ class RecibosTableWidget(QTableWidget):
         self.setRowCount(total_rows)
 
         # Preenche linhas de recibos
+        # CORRIGIDO: Ler recibos do ViewModel em vez de calcular sequência
+        # (para suportar duplicados e gaps)
         for i in range(quantidade):
-            recibo_num: int = recibo_inicio + i
             row_index: int = row_offset + i
+            # Obter número do recibo do ViewModel (pode ser duplicado)
+            recibo_data: dict[str, str] | None = self._viewmodel.get_data()[i] \
+                if i < len(self._viewmodel.get_data()) else None
+            recibo_num: int = int(recibo_data.get("Recibo", recibo_inicio + i)) \
+                if recibo_data else (recibo_inicio + i)
             self._create_recibo_row(row_index, recibo_num)
+
+            # Preencher dados das células do ViewModel
+            if recibo_data:
+                for col_idx, col_name in enumerate(RECIBOS_TABLE_COLUMNS):
+                    if col_name == "Recibo":
+                        continue  # Já preenchido em _create_recibo_row
+                    elif col_name == "Partilhado":
+                        # Partilhado tem widget especial, será preenchido depois
+                        continue
+                    elif col_name in recibo_data:
+                        value: str = recibo_data[col_name]
+                        item: QTableWidgetItem | None = self.item(
+                            row_index, col_idx)
+                        if item:
+                            item.setText(str(value))
 
         # Linha vazia (após recibos)
         empty_row_index: int = row_offset + quantidade
@@ -238,6 +280,12 @@ class RecibosTableWidget(QTableWidget):
 
         # Reativa sinais
         self.blockSignals(False)
+
+        # BUGFIX: Atualizar totais após criar estrutura da tabela
+        # Garante que valores dos totais são exibidos corretamente
+        totals: dict[str, float] = self._viewmodel.get_totals()
+        if totals:
+            self._update_totals_display(totals)
 
     def _create_recibo_row(self, row_index: int, recibo_num: int) -> None:
         """Cria uma linha de recibo com valores iniciais.
@@ -263,11 +311,15 @@ class RecibosTableWidget(QTableWidget):
         # Coluna Partilhado (widget customizado)
         self._create_partilhado_cell(row_index, ReciboColumn.PARTILHADO)
 
+        # FEATURE 2: Coluna Ações (botão eliminar)
+        self._create_delete_button(row_index, ReciboColumn.ACOES)
+
     def _create_empty_row(self, row_index: int) -> None:
         """Cria linha vazia."""
         for col in range(self.columnCount()):
             item = QTableWidgetItem("")
-            if col not in EDITABLE_COLUMNS:
+            # Linha vazia não tem botão de ações
+            if col not in EDITABLE_COLUMNS or col == ReciboColumn.ACOES:
                 item.setFlags(
                     item.flags() & ~Qt.ItemFlag.ItemIsEditable
                 )
@@ -307,6 +359,14 @@ class RecibosTableWidget(QTableWidget):
         partilhado_total_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setItem(row_index, ReciboColumn.PARTILHADO, partilhado_total_item)
 
+        # Coluna Ações: sem valor (linha de totais não tem ações)
+        acoes_total_item = QTableWidgetItem("")
+        acoes_total_item.setFlags(
+            acoes_total_item.flags() & ~Qt.ItemFlag.ItemIsEditable
+        )
+        acoes_total_item.setBackground(Qt.GlobalColor.lightGray)
+        self.setItem(row_index, ReciboColumn.ACOES, acoes_total_item)
+
     def _create_partilhado_cell(self, row: int, col: int) -> None:
         """Cria célula com widget de partilha customizado.
 
@@ -320,6 +380,46 @@ class RecibosTableWidget(QTableWidget):
         )
         self.setCellWidget(row, col, partilhado_widget)
 
+    def _create_delete_button(self, row: int, col: int) -> None:
+        """Cria botão de eliminar linha.
+
+        FEATURE 2: Adiciona mini-botão com ícone 🗑️ para eliminar linha.
+
+        Args:
+            row: Índice da linha
+            col: Índice da coluna
+        """
+
+        # Criar botão com ícone de lixo
+        delete_btn = QPushButton("🗑️")
+        delete_btn.setFixedSize(30, 30)
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                border: none;
+                font-size: 16px;
+                padding: 0;
+            }
+            QPushButton:hover {
+                background-color: #ffebee;
+                border-radius: 4px;
+            }
+            QPushButton:pressed {
+                background-color: #ffcdd2;
+            }
+        """)
+        delete_btn.setToolTip("Eliminar linha")
+        delete_btn.clicked.connect(lambda: self._on_delete_row_clicked(row))
+
+        # Centralizar botão na célula
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.addWidget(delete_btn)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        self.setCellWidget(row, col, container)
+
     def _on_partilhado_changed(self, row: int) -> None:
         """Callback quando widget de partilha muda.
 
@@ -332,6 +432,71 @@ class RecibosTableWidget(QTableWidget):
             partilhado_data: dict[str, bool | str] = widget.get_data()
             # Atualiza ViewModel
             self._viewmodel.set_partilhado_data(row, partilhado_data)
+
+    def _on_delete_row_clicked(self, row: int) -> None:
+        """Callback quando botão de eliminar é clicado.
+
+        FEATURE 2: Elimina linha da tabela e da BD.
+
+        Args:
+            row: Índice da linha na View
+        """
+
+
+        # Confirmar com usuário
+        recibo_item: QTableWidgetItem | None = self.item(row, ReciboColumn.RECIBO)
+        if not recibo_item:
+            return
+
+        recibo_num: str = recibo_item.text()
+
+        reply: QMessageBox.StandardButton = QMessageBox.question(
+            self,
+            "Confirmar Eliminação",
+            f"Tem certeza que deseja eliminar o recibo {recibo_num}?\n\nEsta ação é permanente.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        # Calcular índice de dados (ajustar para Serviço Interno se ativo)
+        data_row: int = row
+        if self._servico_interno_row_index >= 0:
+            data_row = row - 1
+
+        # Validar índice de dados
+        if data_row < 0:
+            logger.warning(f"Índice de dados inválido: {data_row}")
+            return
+
+        # Bloquear sinais durante eliminação
+        self.blockSignals(True)
+
+        # Eliminar do ViewModel (isso também emitirá signal row_deleted)
+        success: bool = self._viewmodel.delete_row(data_row)
+
+        if success:
+            # Remover linha da View
+            self.removeRow(row)
+
+            # Ajustar índice da linha de totais
+            if self._total_row_index > row:
+                self._total_row_index -= 1
+
+            logger.info(f"Linha {row} (Recibo {recibo_num}) eliminada com sucesso")
+        else:
+            logger.error(f"Falha ao eliminar linha {row} (Recibo {recibo_num})")
+            NotificationManager.instance().error(
+                f"Não foi possível eliminar o recibo {recibo_num}."
+            )
+
+        # Reativar sinais
+        self.blockSignals(False)
+
+        # Emitir signal de mudança de dados
+        self.data_changed.emit()
 
     @Slot(QTableWidgetItem)
     def _on_cell_changed(self, item: QTableWidgetItem) -> None:
@@ -375,15 +540,25 @@ class RecibosTableWidget(QTableWidget):
             # Bloqueia sinais temporariamente para evitar loop
             self.blockSignals(True)
 
-            # Valida através do ViewModel (usa data_row ajustado)
-            accepted: bool = self._viewmodel.set_cell_value(data_row, col_name, value)
+            try:
+                # Valida através do ViewModel (usa data_row ajustado)
+                accepted: bool = self._viewmodel.set_cell_value(
+                    data_row, col_name, value)
 
-            if accepted:
-                # Atualiza célula com valor normalizado do ViewModel
-                normalized_value: str = self._viewmodel.get_cell_value(data_row, col_name)
-                item.setText(normalized_value)
+                if accepted:
+                    # Atualiza célula com valor normalizado do ViewModel
+                    normalized_value: str = self._viewmodel.get_cell_value(
+                        data_row, col_name)
 
-            self.blockSignals(False)
+                    # Verificar se o item ainda existe antes de atualizar
+                    # (pode ter sido deletado durante reconstrução da tabela)
+                    if item is not None and self.item(row, col) is item: # type: ignore
+                        item.setText(normalized_value)
+            except RuntimeError:
+                # Item foi deletado durante processamento (esperado durante mudanças de dia)
+                pass
+            finally:
+                self.blockSignals(False)
 
     def _on_viewmodel_data_changed(self) -> None:
         """Callback quando dados do ViewModel mudam.
@@ -398,8 +573,17 @@ class RecibosTableWidget(QTableWidget):
         Args:
             totals: Dicionário com totais calculados pelo ViewModel
         """
+        # Se linha de totais não existe, criar
         if self._total_row_index < 0:
-            return
+            # Verificar se há dados para criar linha de totais
+            if self.rowCount() > 0:
+                # Adicionar linha de totais no final
+                self._total_row_index = self.rowCount()
+                self.insertRow(self._total_row_index)
+                self._create_totals_row(self._total_row_index)
+                logger.debug(f"Linha de totais criada no índice {self._total_row_index}")
+            else:
+                return
 
         # Obtém totais formatados do ViewModel
         formatted_totals: dict[str, str] = self._viewmodel.get_formatted_totals()
@@ -503,6 +687,12 @@ class RecibosTableWidget(QTableWidget):
         partilhado_item.setFlags(partilhado_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
         self.setItem(0, ReciboColumn.PARTILHADO, partilhado_item)
 
+        # Coluna Ações: não editável, fundo amarelo (serviço interno não pode ser eliminado)
+        acoes_item = QTableWidgetItem("")
+        acoes_item.setBackground(QColor("#ffe082"))
+        acoes_item.setFlags(acoes_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        self.setItem(0, ReciboColumn.ACOES, acoes_item)
+
         # === LINHA 1: VAZIA ===
         self._create_empty_row(1)
 
@@ -512,6 +702,11 @@ class RecibosTableWidget(QTableWidget):
 
         # Reativa sinais
         self.blockSignals(False)
+
+        # BUGFIX: Atualizar totais após criar estrutura
+        totals = self._viewmodel.get_totals()
+        if totals:
+            self._update_totals_display(totals)
 
         logger.info("Estrutura de Serviço Interno adicionada (3 linhas) com texto como dados")
 
@@ -551,12 +746,12 @@ class RecibosTableWidget(QTableWidget):
         if self._servico_interno_row_index < 0:
             return 0.0
 
-        km_item: QTableWidgetItem | None = self.item(self._servico_interno_row_index, ReciboColumn.KM)
+        km_item: QTableWidgetItem | None = self.item(
+            self._servico_interno_row_index, ReciboColumn.KM)
         if not km_item:
             return 0.0
 
         try:
-            from src.common.normalizers import decimal_to_float
             return decimal_to_float(km_item.text())
         except (ValueError, AttributeError):
             return 0.0
@@ -604,17 +799,21 @@ class RecibosTableWidget(QTableWidget):
         if not item:
             return
 
-        if is_valid:
-            # Limpar marcação vermelha (restaurar cor padrão)
-            item.setBackground(Qt.GlobalColor.white)
-            item.setForeground(Qt.GlobalColor.black)
-        else:
-            # Marcar vermelho (recibo duplicado)
-            item.setBackground(QColor("#ffcccc"))  # Vermelho claro
-            item.setForeground(QColor("#cc0000"))  # Vermelho escuro
-            item.setToolTip("⚠️ Recibo duplicado!")
+        try:
+            if is_valid:
+                # Limpar marcação vermelha (restaurar cor padrão)
+                item.setBackground(Qt.GlobalColor.white)
+                item.setForeground(Qt.GlobalColor.black)
+            else:
+                # Marcar vermelho (recibo duplicado)
+                item.setBackground(QColor("#ffcccc"))  # Vermelho claro
+                item.setForeground(QColor("#cc0000"))  # Vermelho escuro
+                item.setToolTip("⚠️ Recibo duplicado!")
 
-        logger.debug(f"Recibo linha {view_row}: {'válido' if is_valid else 'DUPLICADO'}")
+            logger.debug(f"Recibo linha {view_row}: {'válido' if is_valid else 'DUPLICADO'}")
+        except RuntimeError:
+            # Item foi deletado durante processamento (esperado durante mudanças de dia)
+            pass
 
     # ==================== FASE 6: ADICIONAR LINHAS ====================
 
@@ -649,7 +848,8 @@ class RecibosTableWidget(QTableWidget):
         # Estrutura: [...dados...] [vazia] [totais]
         # Linha vazia está sempre em _total_row_index - 1
         # Queremos inserir ANTES da vazia, então: _total_row_index - 1
-        insert_position: int = (self._total_row_index - 1) if self._total_row_index >= 0 else self.rowCount()
+        insert_position: int = (
+            self._total_row_index - 1) if self._total_row_index >= 0 else self.rowCount()
 
         self.insertRow(insert_position)
 
