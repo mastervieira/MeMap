@@ -6,6 +6,7 @@ Manages state and logic for wizard Stage 2 (table page).
 from __future__ import annotations
 
 import logging
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject, Signal, Slot
@@ -81,8 +82,26 @@ class TableViewModel(QObject):
 
         Args:
             row_data: TableRowData to add
+
+        Emits:
+            row_added: With row index
+            table_data_changed: With updated table
+            totals_updated: With recalculated totals
         """
-        raise NotImplementedError("To be implemented in Phase 3")
+        # Add to internal list
+        self._table_rows.append(row_data)
+        new_index = len(self._table_rows) - 1
+
+        # Emit signals
+        self.row_added.emit(new_index)
+        self.table_data_changed.emit(self.table_rows)
+
+        # Recalculate totals
+        self.on_calculate_totals()
+
+        logger.debug(
+            f"Linha adicionada: index={new_index}, dia={row_data.dia}"
+        )
 
     @Slot(int)
     def on_remove_row(self, index: int) -> None:
@@ -90,8 +109,27 @@ class TableViewModel(QObject):
 
         Args:
             index: Index of row to remove
+
+        Emits:
+            row_removed: With removed index
+            table_data_changed: With updated table
+            totals_updated: With recalculated totals
         """
-        raise NotImplementedError("To be implemented in Phase 3")
+        if index < 0 or index >= len(self._table_rows):
+            logger.warning(f"Índice inválido para remoção: {index}")
+            return
+
+        # Remove from list
+        removed_row = self._table_rows.pop(index)
+
+        # Emit signals
+        self.row_removed.emit(index)
+        self.table_data_changed.emit(self.table_rows)
+
+        # Recalculate totals
+        self.on_calculate_totals()
+
+        logger.debug(f"Linha removida: index={index}, dia={removed_row.dia}")
 
     @Slot(int, object)
     def on_update_row(
@@ -102,15 +140,77 @@ class TableViewModel(QObject):
         Args:
             index: Index of row to update
             row_data: New TableRowData
+
+        Emits:
+            table_data_changed: With updated table
+            totals_updated: With recalculated totals
         """
-        raise NotImplementedError("To be implemented in Phase 3")
+        if index < 0 or index >= len(self._table_rows):
+            logger.warning(f"Índice inválido para atualização: {index}")
+            return
+
+        # Update row
+        self._table_rows[index] = row_data
+
+        # Emit signals
+        self.table_data_changed.emit(self.table_rows)
+
+        # Recalculate totals
+        self.on_calculate_totals()
+
+        logger.debug(
+            f"Linha atualizada: index={index}, dia={row_data.dia}"
+        )
 
     @Slot()
     def on_calculate_totals(self) -> None:
-        """Calculate and emit updated totals."""
-        raise NotImplementedError("To be implemented in Phase 3")
+        """Calculate and emit updated totals.
+
+        Uses CalculationService to calculate totals from current table rows.
+
+        Emits:
+            totals_updated: With dict of totals
+        """
+        if not self._table_rows:
+            # Empty table - emit zero totals
+            zero_totals = {
+                "total_ips": Decimal("0"),
+                "total_km": Decimal("0"),
+                "total_valor": Decimal("0"),
+                "recibo_min": None,
+                "recibo_max": None,
+            }
+            self.totals_updated.emit(zero_totals)
+            return
+
+        # Calculate using service
+        totals = self._calculation_service.calcular_totais_tabela(
+            self._table_rows
+        )
+
+        # Emit signal
+        self.totals_updated.emit(totals)
+
+        logger.debug(
+            f"Totais calculados: IPs={totals.get('total_ips')}, "
+            f"Valor={totals.get('total_valor')}"
+        )
 
     @Slot()
     def on_clear_all(self) -> None:
-        """Clear all table rows."""
-        raise NotImplementedError("To be implemented in Phase 3")
+        """Clear all table rows.
+
+        Emits:
+            table_data_changed: With empty table
+            totals_updated: With zero totals
+        """
+        # Clear internal state
+        self._table_rows = []
+
+        # Emit signals
+        self.table_data_changed.emit([])
+
+        # Emit zero totals
+        self.on_calculate_totals()
+
+        logger.debug("Tabela limpa")

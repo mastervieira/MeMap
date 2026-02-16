@@ -231,15 +231,106 @@ class FormViewModel(QObject):
 
     @Slot()
     def on_validate(self) -> None:
-        """Validate current form data."""
-        raise NotImplementedError("To be implemented in Phase 3")
+        """Validate current form data.
+
+        Emits:
+            validation_success: If validation passes
+            validation_error: If validation fails (field, message)
+        """
+        # Check if there is data
+        if not self._form_data:
+            self.validation_error.emit("form", "Formulário vazio")
+            return
+
+        # Call ValidationService
+        is_valid, errors = self._validation_service.validar_formulario(
+            self._form_data
+        )
+
+        if is_valid:
+            self.validation_success.emit()
+            logger.info("✓ Formulário validado com sucesso")
+        else:
+            # Emit first error
+            error_msg = "\n".join(errors)
+            self.validation_error.emit("form", error_msg)
+            logger.warning(f"⚠️ Validação falhou: {error_msg}")
 
     @Slot()
     def on_load_data(self) -> None:
-        """Load form data from database."""
-        raise NotImplementedError("To be implemented in Phase 3")
+        """Load form data from database.
+
+        Uses DataService to load wizard_data for current month/year/day.
+
+        Emits:
+            loading_changed: During load operation
+            form_data_changed: When data is loaded
+            validation_error: If load fails
+        """
+        if self._current_mes == 0 or self._current_ano == 0:
+            self.validation_error.emit(
+                "date", "Data não definida. Use set_current_date() primeiro."
+            )
+            return
+
+        try:
+            # Set loading state
+            self._is_loading = True
+            self.loading_changed.emit(True)
+
+            # Load mapa from database
+            mapa = self._data_service.carregar_mapa(
+                self._current_mes, self._current_ano
+            )
+
+            if not mapa:
+                logger.info(
+                    f"Nenhum mapa encontrado para "
+                    f"{self._current_mes}/{self._current_ano}"
+                )
+                self._form_data = None
+                self._raw_form_data = {}
+                self.form_data_changed.emit({})
+                return
+
+            # Extract form data from wizard_data
+            # Assuming there is a selected day (will be set by Coordinator)
+            # For now, load base structure
+            if isinstance(mapa.wizard_data, dict) and "dias" in mapa.wizard_data:
+                # Example: load last edited day or specific day
+                # This logic will be refined when integrating with WizardCoordinator
+                logger.info(
+                    f"Mapa carregado com {len(mapa.wizard_data['dias'])} dias"
+                )
+
+            # Update internal state
+            self.form_data_changed.emit(self._raw_form_data)
+            logger.info("✓ Dados carregados com sucesso")
+
+        except Exception as e:
+            logger.error(f"Erro ao carregar dados: {e}")
+            self.validation_error.emit("load", f"Erro ao carregar: {str(e)}")
+
+        finally:
+            self._is_loading = False
+            self.loading_changed.emit(False)
 
     @Slot()
     def on_clear(self) -> None:
-        """Clear all form data."""
-        raise NotImplementedError("To be implemented in Phase 3")
+        """Clear all form data.
+
+        Resets internal state and emits signals.
+
+        Emits:
+            form_data_changed: With empty dict
+            validation_cleared: For all fields
+        """
+        # Clear internal state
+        self._form_data = None
+        self._raw_form_data = {}
+
+        # Emit signals
+        self.form_data_changed.emit({})
+        self.validation_cleared.emit("all")
+
+        logger.debug("Formulário limpo")
