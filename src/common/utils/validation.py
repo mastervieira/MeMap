@@ -3,10 +3,9 @@ Utilitários de validação genéricos para o projeto MeMap Pro.
 Funções auxiliares reutilizáveis para validação de dados.
 """
 
-from typing import Any
 
 
-def validate_positive_number(value: Any) -> bool:
+def validate_positive_number(value: float | int) -> bool:
     """Valida se um valor pode ser convertido para número positivo.
 
     Args:
@@ -21,7 +20,7 @@ def validate_positive_number(value: Any) -> bool:
         return False
 
 
-def validate_positive_int(value: Any) -> bool:
+def validate_positive_int(value: int) -> bool:
     """Valida se um valor pode ser convertido para inteiro positivo.
 
     Args:

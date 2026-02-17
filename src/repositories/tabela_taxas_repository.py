@@ -16,9 +16,9 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any
 
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.query import Query
 
 from src.common.constants.enums import EstadoDocumento, TipoDiaAssiduidade
 from src.common.execptions.assiduidade import (
@@ -29,7 +29,7 @@ from src.common.execptions.assiduidade import (
 )
 from src.db.models.mapas import TabelaTaxas, TabelaTaxasLinha
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TabelaTaxasRepository:
@@ -50,7 +50,7 @@ class TabelaTaxasRepository:
         Args:
             session: Sessão do SQLAlchemy
         """
-        self._session = session
+        self._session: Session = session
 
     @property
     def session(self) -> Session:
@@ -66,8 +66,8 @@ class TabelaTaxasRepository:
         mes: int | None = None,
         ano: int | None = None,
         estado: EstadoDocumento = EstadoDocumento.RASCUNHO,
-        wizard_data: dict[str, Any] | None = None,
-        **kwargs: Any,
+        wizard_data: dict[str, object] | None = None,
+        **kwargs: object,
     ) -> TabelaTaxas:
         """Cria novo Mapa de Assiduidade.
 
@@ -122,14 +122,24 @@ class TabelaTaxasRepository:
             TabelaTaxas ou None
         """
         try:
-            return (
+            resultado: TabelaTaxas | None = (
                 self._session.query(TabelaTaxas)
                 .options(joinedload(TabelaTaxas.linhas))
                 .filter(TabelaTaxas.id == id)
                 .first()
             )
-        except Exception:
-            return None
+            # Se o SQLAlchemy não encontrou nada, lançamos o erro para o teste pegar
+            if resultado is None:
+                raise ValueError(f"Mapa com ID {id} não encontrado.")
+
+            return resultado
+
+        except ValueError as e:
+            # Re-lança o ValueError para que o teste (e a UI) saibam o que houve
+            raise e
+        except Exception as e:
+            # Para outros erros (ex: conexão), você decide se lança ou trata
+            raise Exception(f"Erro inesperado ao buscar ID {id}: {str(e)}")
 
     def buscar_por_mes_ano(self, mes: int, ano: int) -> TabelaTaxas | None:
         """Busca Mapa de Assiduidade por mês/ano.
@@ -223,7 +233,7 @@ class TabelaTaxasRepository:
             True se eliminou, False se não encontrou
         """
         try:
-            mapa = (
+            mapa: TabelaTaxas | None = (
                 self._session.query(TabelaTaxas)
                 .filter(TabelaTaxas.id == id)
                 .first()
@@ -267,7 +277,7 @@ class TabelaTaxasRepository:
             Lista de TabelaTaxas
         """
         try:
-            query = self._session.query(TabelaTaxas)
+            query: Query[TabelaTaxas] = self._session.query(TabelaTaxas)
             if ano:
                 query = query.filter(TabelaTaxas.ano == ano)
             return query.order_by(
@@ -326,6 +336,10 @@ class TabelaTaxasRepository:
         Returns:
             TabelaTaxasLinha criada
         """
+        mapa: TabelaTaxas | None = self.buscar_por_id(mapa_id)
+        if not mapa:
+            raise ValueError("Mapa de assiduidade não encontrado")
+
         linha = TabelaTaxasLinha(
             mapa_id=mapa_id,
             dia=dia,
@@ -357,10 +371,10 @@ class TabelaTaxasRepository:
         Returns:
             Lista de TabelaTaxasLinha criadas
         """
-        dias = []
+        dias: list[TabelaTaxasLinha] = []
         for data in dias_data:
             # Converter tipo string para enum
-            tipo = data.get("tipo", "trabalho")
+            tipo: int | str | Decimal | None = data.get("tipo", "trabalho")
             if isinstance(tipo, str):
                 tipo = TipoDiaAssiduidade(tipo)
 
@@ -393,7 +407,7 @@ class TabelaTaxasRepository:
         Returns:
             Número de dias removidos
         """
-        count = (
+        count: int = (
             self._session.query(TabelaTaxasLinha)
             .filter(TabelaTaxasLinha.mapa_id == mapa_id)
             .delete()
@@ -418,12 +432,12 @@ class TabelaTaxasRepository:
             TabelaTaxasNotFoundError: Se mapa não encontrado
             TabelaTaxasInvalidStateError: Se mapa já fechado
         """
-        mapa = self.buscar_por_id(mapa_id)
+        mapa: TabelaTaxas | None = self.buscar_por_id(mapa_id)
         if not mapa:
             raise TabelaTaxasNotFoundError(mapa_id)
 
         # Permitir finalizar se RASCUNHO ou ABERTO (reaberto para edição)
-        estados_editaveis = [EstadoDocumento.RASCUNHO, EstadoDocumento.ABERTO]
+        estados_editaveis: list[EstadoDocumento] = [EstadoDocumento.RASCUNHO, EstadoDocumento.ABERTO]
         if mapa.estado not in estados_editaveis:
             raise TabelaTaxasInvalidStateError(
                 mapa_id=mapa_id,
@@ -456,7 +470,7 @@ class TabelaTaxasRepository:
         # TODO: Implementar EstadoManager quando estiver disponível
         # from mapa_contas.services.estado_manager import EstadoManager
 
-        mapa = self.buscar_por_id(mapa_id)
+        mapa: TabelaTaxas | None = self.buscar_por_id(mapa_id)
         if not mapa:
             raise TabelaTaxasNotFoundError(mapa_id)
 
@@ -495,7 +509,7 @@ class TabelaTaxasRepository:
         # from mapa_contas.services.estado_manager import EstadoManager
 
         try:
-            mapa = (
+            mapa: TabelaTaxas | None = (
                 self._session.query(TabelaTaxas)
                 .options(joinedload(TabelaTaxas.linhas))
                 .filter(TabelaTaxas.id == mapa_id)
@@ -546,7 +560,7 @@ class TabelaTaxasRepository:
         Returns:
             TabelaTaxas com totais actualizados
         """
-        mapa = self.buscar_por_id(mapa_id)
+        mapa: TabelaTaxas | None = self.buscar_por_id(mapa_id)
         if not mapa:
             raise ValueError(f"TabelaTaxas id={mapa_id} não encontrado")
 
@@ -597,7 +611,7 @@ class TabelaTaxasRepository:
         Returns:
             TabelaTaxas actualizado
         """
-        mapa = self.buscar_por_id(mapa_id)
+        mapa: TabelaTaxas | None = self.buscar_por_id(mapa_id)
         if not mapa:
             raise ValueError(f"TabelaTaxas id={mapa_id} não encontrado")
 

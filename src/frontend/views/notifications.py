@@ -3,9 +3,10 @@ Sistema de notificações (Toast) para a aplicação.
 Implementa mensagens de status que aparecem temporariamente sem interromper o fluxo.
 """
 
-from PySide6.QtCore import Qt, QTimer, QEasingCurve, QPropertyAnimation, Signal
-from PySide6.QtGui import QColor, QPainter, QPainterPath, QLinearGradient
-from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton
+
+from PySide6.QtCore import QEasingCurve, QPropertyAnimation, Qt, QTimer, Signal
+from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPainterPath
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from src.common.themes import ThemeManager
 
@@ -76,7 +77,7 @@ class ToastNotification(QWidget):
         self._is_visible = False
         self._message_type = "info"
 
-    def paintEvent(self, event):
+    def paintEvent(self, event: object) -> None:
         """Desenha o fundo arredondado do toast."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -111,7 +112,7 @@ class ToastNotification(QWidget):
         painter.setPen(border_color)
         painter.drawPath(path)
 
-    def show_message(self, message: str, message_type: str = "info", duration: int = 3000):
+    def show_message(self, message: str, message_type: str = "info", duration: int = 3000) -> None:
         """
         Exibe uma mensagem de toast.
 
@@ -174,7 +175,7 @@ class ToastNotification(QWidget):
         if duration > 0:
             self.auto_hide_timer.start(duration)
 
-    def hide_with_animation(self):
+    def hide_with_animation(self) -> None:
         """Esconde o toast com animação."""
         if not self._is_visible:
             return
@@ -187,17 +188,17 @@ class ToastNotification(QWidget):
         self.animation.finished.connect(self._on_animation_finished)
         self.animation.start()
 
-    def _on_animation_finished(self):
+    def _on_animation_finished(self) -> None:
         """Callback quando a animação termina."""
         self.hide()
         self.animation.finished.disconnect()
         self.dismissed.emit()
 
-    def _on_close_clicked(self, event):
+    def _on_close_clicked(self, event: object) -> None:
         """Callback quando o botão de fechar é clicado."""
         self.hide_with_animation()
 
-    def set_message_type(self, message_type: str):
+    def set_message_type(self, message_type: str) -> None:
         """Define o tipo de mensagem (atualiza cores e ícones)."""
         self._message_type = message_type
         self.update()  # Redesenha com nova cor

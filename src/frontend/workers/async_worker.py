@@ -4,11 +4,9 @@ Utiliza QThread para manter a Main Thread fluida a 60fps.
 """
 
 import asyncio
-import time
 from typing import Optional
 
-from PySide6.QtCore import QObject, QThread, Signal, Slot
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QObject, QThread, Signal
 
 
 class WorkerSignals(QObject):
@@ -75,12 +73,41 @@ class AsyncWorker(QThread):
             if self._loop:
                 self._loop.close()
 
-    async def _main_task(self):
-        """Tarefa principal do worker."""
-        # Este método deve ser sobrescrito nas subclasses
-        pass
+    async def _main_task(self) -> None:
+        """Tarefa principal do worker.
 
-    def stop(self):
+        Este método deve ser sobrescrito nas subclasses. Retorna None por padrão.
+        """
+        return None
+
+    def run(self) -> None:
+        """Executa o worker em uma thread separada."""
+        try:
+            # Cria um novo event loop para esta thread
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+
+            # Executa a tarefa principal
+            self._running = True
+            self.signals.started.emit()
+
+            try:
+                self._loop.run_until_complete(self._main_task())
+            except Exception as e:
+                self._handle_error(f"Erro no worker: {str(e)}")
+            finally:
+                self._running = False
+                self.signals.finished.emit()
+
+        except Exception as e:
+            self._handle_error(f"Erro crítico no worker: {str(e)}")
+        finally:
+            # Limpa o event loop
+            if self._loop:
+                self._loop.close()
+
+
+    def stop(self) -> None:
         """Para a execução do worker de forma segura."""
         self._should_stop = True
         if self._task and not self._task.done():

@@ -13,6 +13,7 @@ sys.path.insert(
 )
 
 # Now import external libraries
+from PySide6.QtCore import QCoreApplication
 import qasync  # type: ignore[import-not-found]
 from PySide6.QtWidgets import QApplication
 
@@ -30,12 +31,12 @@ if __name__ == "__main__":
     # Configura o loop de eventos qasync
     try:
         # Cria a aplicação Qt primeiro
-        app = QApplication.instance()
+        app: QCoreApplication | None = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
 
         # Cria o loop de eventos
-        loop = qasync.QEventLoop(app)
+        loop: qasync.QEventLoop = qasync.QEventLoop(app)
         asyncio.set_event_loop(loop)
 
         # Executa a aplicação

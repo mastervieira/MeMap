@@ -9,8 +9,10 @@ import logging
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QDate, Slot
+from PySide6.QtGui import QColor, QTextCharFormat
 from PySide6.QtWidgets import (
     QCalendarWidget,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -18,7 +20,6 @@ from PySide6.QtWidgets import (
 
 if TYPE_CHECKING:
     from src.frontend.wizard.viewmodels import CalendarViewModel
-
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -108,7 +109,10 @@ class CalendarView(QWidget):
             date: Selected date
         """
         logger.info(f"Date selected: {date.toString('dd/MM/yyyy')}")
-        # TODO: Update UI state
+
+        # Just update internal state (calendar is already updated)
+        # Could add a status label or details panel here if needed
+        logger.debug(f"UI state updated for {date.day()}/{date.month()}/{date.year()}")
 
     @Slot(QDate, str)
     def _on_day_marked(self, date: QDate, tipo: str) -> None:
@@ -119,7 +123,24 @@ class CalendarView(QWidget):
             tipo: Day type
         """
         logger.info(f"Day marked: {date.toString()} as {tipo}")
-        # TODO: Update calendar cell appearance
+
+        # Create text format for cell appearance
+        cell_format = QTextCharFormat()
+        cell_format.setFontWeight(600)  # Bold
+
+        # Color code by type
+        if tipo.lower() == "trabalho":
+            cell_format.setBackground(QColor(144, 238, 144))  # Light green
+        elif tipo.lower() in ("ferias", "férias"):
+            cell_format.setBackground(QColor(255, 255, 153))  # Light yellow
+        elif tipo.lower() == "feriado":
+            cell_format.setBackground(QColor(255, 192, 203))  # Light pink
+        elif tipo.lower() in ("falta", "ausencia", "ausência"):
+            cell_format.setBackground(QColor(255, 160, 122))  # Light coral
+
+        # Apply format to date in calendar
+        self.calendar.setDateTextFormat(date, cell_format)
+        logger.debug(f"Calendar cell formatted for {date.toString()} as {tipo}")
 
     @Slot(str)
     def _on_export_completed(self, file_path: str) -> None:
@@ -129,7 +150,12 @@ class CalendarView(QWidget):
             file_path: Path to exported file
         """
         logger.info(f"Export completed: {file_path}")
-        # TODO: Show success message
+
+        QMessageBox.information(
+            self,
+            "Exportação Concluída",
+            f"Ficheiro exportado com sucesso:\n{file_path}",
+        )
 
     @Slot(str)
     def _on_export_error(self, message: str) -> None:
@@ -139,4 +165,9 @@ class CalendarView(QWidget):
             message: Error message
         """
         logger.error(f"Export error: {message}")
-        # TODO: Show error message
+
+        QMessageBox.critical(
+            self,
+            "Erro na Exportação",
+            f"Erro ao exportar:\n{message}",
+        )

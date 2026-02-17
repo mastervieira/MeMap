@@ -1,0 +1,1343 @@
+src/frontend/wizard/models/table_data.py:158:21: error: Argument 1 to "int" has
+incompatible type "int | str | Decimal | float | None"; expected
+"str | Buffer | SupportsInt | SupportsIndex"  [arg-type]
+                dia=int(data["dia"]),
+                        ^~~~~~~~~~~
+src/frontend/wizard/models/table_data.py:162:21: error: Argument 1 to "int" has
+incompatible type "int | str | Decimal | float | None"; expected
+"str | Buffer | SupportsInt | SupportsIndex"  [arg-type]
+                    int(data["recibo_inicio"])
+                        ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/models/table_data.py:167:21: error: Argument 1 to "int" has
+incompatible type "int | str | Decimal | float | None"; expected
+"str | Buffer | SupportsInt | SupportsIndex"  [arg-type]
+                    int(data["recibo_fim"])
+                        ^~~~~~~~~~~~~~~~~~
+src/frontend/wizard/models/table_data.py:171:21: error: Argument 1 to "int" has
+incompatible type "int | str | Decimal | float | None"; expected
+"str | Buffer | SupportsInt | SupportsIndex"  [arg-type]
+                ips=int(data.get("ips", 0)),
+                        ^~~~~~~~~~~~~~~~~~
+src/common/themes/theme_manager.py:25:17: error: Missing type parameters for
+generic type "list"  [type-arg]
+        _callbacks: list = []
+                    ^
+src/common/themes/theme_manager.py:77:43: error: Function "builtins.callable"
+is not valid as a type  [valid-type]
+        def register_callback(self, callback: callable) -> None:
+                                              ^
+src/common/themes/theme_manager.py:77:43: note: Perhaps you meant "typing.Callable" instead of "callable"?
+src/common/themes/theme_manager.py:86:45: error: Function "builtins.callable"
+is not valid as a type  [valid-type]
+        def unregister_callback(self, callback: callable) -> None:
+                                                ^
+src/common/themes/theme_manager.py:86:45: note: Perhaps you meant "typing.Callable" instead of "callable"?
+src/common/validators/exel_validator.py:95:35: error: Incompatible types in
+assignment (expression has type "dict[int | str, str | int | bool]", variable
+has type "ValidationResult | None")  [assignment]
+            self._validation_result = self.validar_arquivo(filepath)
+                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:96:9: error: Returning Any from
+function declared to return "bool"  [no-any-return]
+            return self._validation_result["valido"]
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:96:16: error: Value of type
+"ValidationResult | None" is not indexable  [index]
+            return self._validation_result["valido"]
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:110:12: error: Value of type
+"ValidationResult" is not indexable  [index]
+            if self._validation_result["erros"]:
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:113:17: error: Value of type
+"ValidationResult" is not indexable  [index]
+                    self._validation_result["erros"]
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:136:20: error: Incompatible return
+value type (got "dict[str, object]", expected
+"dict[int | str, str | int | bool]")  [return-value]
+                return self._to_dict(result)
+                       ^~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:140:20: error: Incompatible return
+value type (got "dict[str, object]", expected
+"dict[int | str, str | int | bool]")  [return-value]
+                return self._to_dict(result)
+                       ^~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:144:20: error: Incompatible return
+value type (got "dict[str, object]", expected
+"dict[int | str, str | int | bool]")  [return-value]
+                return self._to_dict(result)
+                       ^~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:148:20: error: Incompatible return
+value type (got "dict[str, object]", expected
+"dict[int | str, str | int | bool]")  [return-value]
+                return self._to_dict(result)
+                       ^~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:156:16: error: Incompatible return
+value type (got "dict[str, object]", expected
+"dict[int | str, str | int | bool]")  [return-value]
+            return self._to_dict(result)
+                   ^~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:285:24: error: Name
+"_WorksheetOrChartsheetLike" is not defined  [name-defined]
+                    sheet: _WorksheetOrChartsheetLike = wb[sheet_name]
+                           ^
+src/common/validators/exel_validator.py:314:5: error: Function is missing a
+type annotation for one or more arguments  [no-untyped-def]
+        def _check_dangerous_formulas(self, sheet, result: ValidationResul...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/common/validators/exel_validator.py:335:5: error: Function is missing a
+type annotation for one or more arguments  [no-untyped-def]
+        def _check_external_links(self, sheet, result: ValidationResult) -...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/common/validators/exel_validator.py:368:12: error: Incompatible return
+value type (got "dict[int | str, str | int | bool]", expected
+"dict[str, object]")  [return-value]
+        return validator.validar_arquivo(filepath)
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/exel_validator.py:381:14: error: "ExcelValidator" has no
+attribute "validate"  [attr-defined]
+        result = validator.validate(filepath)
+                 ^~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_logic.py:48:42: error: Argument 1 to
+"validate_positive_number" has incompatible type "Any | None"; expected
+"float | int"  [arg-type]
+                    validate_positive_number(raw_data.get("quantidade_reci...
+                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_logic.py:49:42: error: Argument 1 to
+"validate_positive_number" has incompatible type "Any | None"; expected
+"float | int"  [arg-type]
+                    validate_positive_number(raw_data.get("recibo_inicio")...
+                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_logic.py:50:42: error: Argument 1 to
+"validate_positive_number" has incompatible type "Any | None"; expected
+"float | int"  [arg-type]
+                    validate_positive_number(raw_data.get("recibo_fim"))
+                                             ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_logic.py:77: error: Unused "type: ignore" comment 
+[unused-ignore]
+                    "total_km": km,  # type: ignore
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_logic.py:96:57: error: Argument "data" to
+"ValidationResult" has incompatible type "FormPage1Data"; expected
+"dict[str, Any] | None"  [arg-type]
+                return ValidationResult(is_valid=True, data=clean_data)
+                                                            ^~~~~~~~~~
+src/common/validators/numeric_validator.py:84:13: error: Statement is
+unreachable  [unreachable]
+                return False
+                ^~~~~~~~~~~~
+src/common/validators/numeric_validator.py:89:38: error: Argument 1 to
+"validate_field" of "NumericValidator" has incompatible type
+"str | int | float"; expected "str"  [arg-type]
+            result = self.validate_field(field_name, value)
+                                         ^~~~~~~~~~
+src/common/validators/numeric_validator.py:89:50: error: Argument 2 to
+"validate_field" of "NumericValidator" has incompatible type
+"str | int | float | None"; expected "str | int | float"  [arg-type]
+            result = self.validate_field(field_name, value)
+                                                     ^~~~~
+src/common/validators/numeric_validator.py:142:38: error: "object" has no
+attribute "get"  [attr-defined]
+                min_value = min_value or config.get("min")
+                                         ^~~~~~~~~~
+src/common/validators/numeric_validator.py:143:38: error: "object" has no
+attribute "get"  [attr-defined]
+                max_value = max_value or config.get("max")
+                                         ^~~~~~~~~~
+src/common/validators/numeric_validator.py:145:35: error: "object" has no
+attribute "get"  [attr-defined]
+                    decimal_places or config.get("decimal_places")
+                                      ^~~~~~~~~~
+src/common/validators/numeric_validator.py:175:27: error: Missing type
+parameters for generic type "dict"  [type-arg]
+            fields: dict[str, dict],
+                              ^
+src/common/validators/numeric_validator.py:197:17: error: Argument 2 to
+"validate_field" of "NumericValidator" has incompatible type "Any | None";
+expected "str | int | float"  [arg-type]
+                    value,
+                    ^~~~~
+src/common/validators/numeric_validator.py:227:13: error: Statement is
+unreachable  [unreachable]
+                result.add_error(f"Campo {field_name} não pode ser vazio")
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/numeric_validator.py:359:6: error: Missing type
+parameters for generic type "dict"  [type-arg]
+    ) -> dict:
+         ^
+src/common/execptions/assiduidade.py:105:68: error: Incompatible default for
+argument "original_error" (default has type "None", argument has type
+"Exception")  [assignment]
+    ... def __init__(self, operation: str, original_error: Exception = None):
+                                                                       ^~~~
+src/common/execptions/assiduidade.py:105:68: note: PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True
+src/common/execptions/assiduidade.py:105:68: note: Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase
+src/frontend/viewmodels/base_view_model.py:13:31: error: Unsupported dynamic
+base class "type"  [misc]
+    class ABCQObjectMeta(ABCMeta, type(QObject)):
+                                  ^~~~~~~~~~~~~
+src/frontend/viewmodels/base_view_model.py:24:44: error: "BaseViewModel" has no
+attribute "__abstractmethods__"  [attr-defined]
+            abstract_methods: frozenset[str] = self.__abstractmethods__
+                                               ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/components/charts/chart_styles.py:59:31: error: Missing type
+parameters for generic type "dict"  [type-arg]
+        def get_axis_pen(self) -> dict:
+                                  ^
+src/frontend/components/charts/chart_styles.py:63:31: error: Missing type
+parameters for generic type "dict"  [type-arg]
+        def get_grid_pen(self) -> dict:
+                                  ^
+src/frontend/styles/styles.py:58:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def __init__(self):
+        ^~~~~~~~~~~~~~~~~~~
+src/frontend/styles/styles.py:58:5: note: Use "-> None" if function does not return a value
+src/common/icons.py:15:5: error: Function is missing a return type annotation 
+[no-untyped-def]
+        def __init__(self):
+        ^~~~~~~~~~~~~~~~~~~
+src/common/icons.py:15:5: note: Use "-> None" if function does not return a value
+src/common/icons.py:31:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.home', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:35:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.edit', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:39:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.calendar-alt', color=self._get_icon_colo...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/common/icons.py:43:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.tasks', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:47:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.chart-line', color=self._get_icon_color(...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:51:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.cog', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:56:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.sun', color=self._get_accent_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:60:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.moon', color=self._get_accent_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:64:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.save', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:68:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.file-export', color=self._get_icon_color...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:72:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.sync-alt', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:76:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.search', color=self._get_icon_color())
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:82:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.check-circle', color=palette.success)
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:87:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.times-circle', color=palette.error)
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/icons.py:92:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.exclamation-triangle', color=palette.war...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/common/icons.py:97:9: error: Returning Any from function declared to return
+"QIcon"  [no-any-return]
+            return qta.icon('fa5s.info-circle', color=palette.info)
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/components/notifications/__init__.py:36:1: error: Module
+"src.frontend.components.notifications.toast_manager" has no attribute
+"NotificationManager"  [attr-defined]
+    from .toast_manager import NotificationManager
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/components/notifications/__init__.py:37:1: error: Module
+"src.frontend.components.notifications.toast_widget" has no attribute
+"ModernToast"  [attr-defined]
+    from .toast_widget import ModernToast
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:28:5: error: Function is missing a type
+annotation for one or more arguments  [no-untyped-def]
+        def __init__(self, parent=None) -> None:
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:35:29: error: "type[Qt]" has no attribute
+"FramelessWindowHint"  [attr-defined]
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+                                ^~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:35:54: error: "type[Qt]" has no attribute
+"Tool"  [attr-defined]
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+                                                         ^~~~~~~
+src/frontend/views/notifications.py:36:27: error: "type[Qt]" has no attribute
+"WA_TranslucentBackground"  [attr-defined]
+            self.setAttribute(Qt.WA_TranslucentBackground)
+                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:47:38: error: "type[Qt]" has no attribute
+"AlignCenter"  [attr-defined]
+            self.icon_label.setAlignment(Qt.AlignCenter)
+                                         ^~~~~~~~~~~~~~
+src/frontend/views/notifications.py:56:40: error: "type[Qt]" has no attribute
+"AlignCenter"  [attr-defined]
+            self.close_button.setAlignment(Qt.AlignCenter)
+                                           ^~~~~~~~~~~~~~
+src/frontend/views/notifications.py:59:9: error: Cannot assign to a method 
+[method-assign]
+            self.close_button.mousePressEvent = self._on_close_clicked
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:69:39: error: "type[QEasingCurve]" has no
+attribute "InOutQuad"  [attr-defined]
+            self.animation.setEasingCurve(QEasingCurve.InOutQuad)
+                                          ^~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:83:31: error: "type[QPainter]" has no
+attribute "Antialiasing"  [attr-defined]
+            painter.setRenderHint(QPainter.Antialiasing)
+                                  ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:158:27: error: Item "QObject" of
+"QObject | None" has no attribute "rect"  [union-attr]
+                parent_rect = self.parent().rect()
+                              ^~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:158:27: error: Item "None" of
+"QObject | None" has no attribute "rect"  [union-attr]
+                parent_rect = self.parent().rect()
+                              ^~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:218:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:223:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def show_info(self, message: str, duration: int = 3000):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:227:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def show_success(self, message: str, duration: int = 3000):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:231:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def show_error(self, message: str, duration: int = 5000):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:235:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def show_warning(self, message: str, duration: int = 4000):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:239:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _show_notification(self, message: str, message_type: str, dura...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/notifications.py:248:48: error: Call to untyped function
+"_on_notification_dismissed" in typed context  [no-untyped-call]
+            notification.dismissed.connect(lambda: self._on_notification_d...
+                                                   ^~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/notifications.py:251:9: error: Call to untyped function
+"_position_notifications" in typed context  [no-untyped-call]
+            self._position_notifications()
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:257:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _position_notifications(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:257:5: note: Use "-> None" if function does not return a value
+src/frontend/views/notifications.py:276:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def _on_notification_dismissed(self, notification):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:282:9: error: Call to untyped function
+"_position_notifications" in typed context  [no-untyped-call]
+            self._position_notifications()
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:284:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def clear_all(self):
+        ^~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:284:5: note: Use "-> None" if function does not return a value
+src/frontend/views/notifications.py:289:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def set_max_notifications(self, max_count: int):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:308:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, footer_widget):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:313:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def set_status(self, message: str, level: str = "info"):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:321:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def set_progress(self, value: int):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:326:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def clear_status(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:326:5: note: Use "-> None" if function does not return a value
+src/frontend/views/notifications.py:330:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _add_to_history(self, message: str, level: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:345:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def get_history(self):
+        ^~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:349:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def clear_history(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:349:5: note: Use "-> None" if function does not return a value
+src/frontend/views/notifications.py:360:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:363:37: error: Call to untyped function
+"NotificationManager" in typed context  [no-untyped-call]
+            self.notification_manager = NotificationManager(self)
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:404:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _show_multiple_notifications(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/notifications.py:404:5: note: Use "-> None" if function does not return a value
+src/frontend/components/partilhado_widget.py:185:30: error: Missing type
+parameters for generic type "dict"  [type-arg]
+        def set_data(self, data: dict) -> None:
+                                 ^
+src/frontend/components/charts/base_chart.py:6: error: Unused "type: ignore"
+comment  [unused-ignore]
+    import pyqtgraph as pg  # type: ignore
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/components/charts/bar_chart.py:7: error: Unused "type: ignore"
+comment  [unused-ignore]
+    import pyqtgraph as pg  # type: ignore
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:45:30: error: Missing type parameters for
+generic type "Task"  [type-arg]
+            self._task: Optional[asyncio.Task] = None
+                                 ^
+src/frontend/workers/async_worker.py:50:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def run(self):
+        ^~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:50:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:83:5: error: Name "run" already defined on
+line 50  [no-redef]
+        def run(self) -> None:
+        ^~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:126:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _handle_error(self, error_msg: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:131:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _emit_progress(self, value: int, text: str | None = None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:137:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        def _emit_status(self, message: str, level: str = "info"):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:162:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _main_task(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:162:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:170:23: error: Call to untyped function
+"_calculate_fibonacci" in typed context  [no-untyped-call]
+                    await self._calculate_fibonacci()
+                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:172:23: error: Call to untyped function
+"_calculate_primes" in typed context  [no-untyped-call]
+                    await self._calculate_primes()
+                          ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:174:23: error: Call to untyped function
+"_calculate_factorial" in typed context  [no-untyped-call]
+                    await self._calculate_factorial()
+                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:191:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _calculate_fibonacci(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:191:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:209:24: error: Incompatible types in
+assignment (expression has type "dict[str, object]", variable has type "None") 
+[assignment]
+            self._result = {"type": "fibonacci", "n": n, "result": a}
+                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:212:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _calculate_primes(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:212:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:239:24: error: Incompatible types in
+assignment (expression has type "dict[str, object]", variable has type "None") 
+[assignment]
+            self._result = {
+                           ^
+src/frontend/workers/async_worker.py:247:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _calculate_factorial(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:247:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:265:24: error: Incompatible types in
+assignment (expression has type "dict[str, object]", variable has type "None") 
+[assignment]
+            self._result = {"type": "factorial", "n": n, "result": result}
+                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:283:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _main_task(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:283:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:291:23: error: Call to untyped function
+"_read_file" in typed context  [no-untyped-call]
+                    await self._read_file()
+                          ^~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:293:23: error: Call to untyped function
+"_write_file" in typed context  [no-untyped-call]
+                    await self._write_file()
+                          ^~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:295:23: error: Call to untyped function
+"_analyze_file" in typed context  [no-untyped-call]
+                    await self._analyze_file()
+                          ^~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:310:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _read_file(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:310:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:330:28: error: Incompatible types in
+assignment (expression has type "dict[str, object]", variable has type "None") 
+[assignment]
+                self._result = {
+                               ^
+src/frontend/workers/async_worker.py:340:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _write_file(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:340:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:359:28: error: Incompatible types in
+assignment (expression has type "dict[str, object]", variable has type "None") 
+[assignment]
+                self._result = {
+                               ^
+src/frontend/workers/async_worker.py:369:5: error: Function is missing a return
+type annotation  [no-untyped-def]
+        async def _analyze_file(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/workers/async_worker.py:369:5: note: Use "-> None" if function does not return a value
+src/frontend/workers/async_worker.py:387:17: error: Unsupported operand types
+for + ("object" and "int")  [operator]
+                    analysis["total_lines"] += 10
+                    ^
+src/frontend/workers/async_worker.py:388:17: error: Unsupported operand types
+for + ("object" and "int")  [operator]
+                    analysis["total_words"] += 50
+                    ^
+src/frontend/workers/async_worker.py:389:17: error: Unsupported operand types
+for + ("object" and "int")  [operator]
+                    analysis["total_chars"] += 250
+                    ^
+src/frontend/workers/async_worker.py:398:28: error: Incompatible types in
+assignment (expression has type "dict[str, Collection[str]]", variable has type
+"None")  [assignment]
+                self._result = {"operation": "analyze", "analysis": analys...
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/db/models/user.py:25:12: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class User(Base):
+               ^~~~
+src/db/models/user.py:68:32: error: Name "Documento" is not defined 
+[name-defined]
+        pf_documentos: Mapped[list["Documento"]] = relationship(
+                                   ^
+src/db/models/user.py:85:29: error: "DateTime" has no attribute "isoformat" 
+[attr-defined]
+                "ultimo_login": self.ultimo_login.isoformat() if self.ulti...
+                                ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/db/models/user.py:86:27: error: "DateTime" has no attribute "isoformat" 
+[attr-defined]
+                "created_at": self.created_at.isoformat() if self.created_...
+                              ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/db/models/mapas.py:14:17: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class Documento(Base):
+                    ^~~~
+src/db/models/mapas.py:156:32: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class MapaTaxas(MapaBaseMixin, Base):
+                                   ^~~~
+src/db/models/mapas.py:217:22: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class MapaTaxasLinha(Base):
+                         ^~~~
+src/db/models/mapas.py:249:34: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class TabelaTaxas(MapaBaseMixin, Base):
+                                     ^~~~
+src/db/models/mapas.py:334:24: error: Class cannot subclass "Base" (has type
+"Any")  [misc]
+    class TabelaTaxasLinha(Base):
+                           ^~~~
+src/common/validators/pdf_validator.py:31:14: error: Incompatible types in
+assignment (expression has type "None", variable has type Module)  [assignment]
+        PyPDF2 = None
+                 ^~~~
+src/common/validators/pdf_validator.py:104:35: error: Incompatible types in
+assignment (expression has type "dict[Any, Any]", variable has type
+"ValidationResult | None")  [assignment]
+            self._validation_result = self.validar_arquivo(filepath)
+                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:105:9: error: Returning Any from
+function declared to return "bool"  [no-any-return]
+            return self._validation_result["valido"]
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:105:16: error: Value of type
+"ValidationResult | None" is not indexable  [index]
+            return self._validation_result["valido"]
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:118:12: error: Value of type
+"ValidationResult" is not indexable  [index]
+            if self._validation_result["erros"]:
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:120:17: error: Value of type
+"ValidationResult" is not indexable  [index]
+                    self._validation_result["erros"]
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:125:56: error: Missing type parameters
+for generic type "dict"  [type-arg]
+        def validar_arquivo(self, filepath: Path | str) -> dict:
+                                                           ^
+src/common/validators/pdf_validator.py:160:53: error: Missing type parameters
+for generic type "dict"  [type-arg]
+        def _to_dict(self, result: ValidationResult) -> dict:
+                                                        ^
+src/common/validators/pdf_validator.py:234:13: error: Statement is unreachable 
+[unreachable]
+                result.add_warning(
+                ^~~~~~~~~~~~~~~~~~~
+src/common/validators/pdf_validator.py:319:48: error: Missing type parameters
+for generic type "dict"  [type-arg]
+    def validate_pdf_file(filepath: Path | str) -> dict:
+                                                   ^
+src/common/validators/pdf_validator.py:342:14: error: "PdfValidator" has no
+attribute "validate"  [attr-defined]
+        result = validator.validate(filepath)
+                 ^~~~~~~~~~~~~~~~~~
+src/repositories/taxas_repositorie.py:308:45: error: Missing type parameters
+for generic type "dict"  [type-arg]
+            self, mapa_id: int, dias_data: list[dict]
+                                                ^
+src/repositories/taxas_repositorie.py:392:47: error: Missing type parameters
+for generic type "dict"  [type-arg]
+            self, mapa_id: int, linhas_data: list[dict]
+                                                  ^
+src/repositories/taxas_repositorie.py:470:30: error: Incompatible types in
+assignment (expression has type "datetime", variable has type
+"SQLCoreOperations[DateTime] | DateTime")  [assignment]
+            mapa.finalizado_em = datetime.now()
+                                 ^~~~~~~~~~~~~~
+src/repositories/taxas_repositorie.py:471:27: error: Incompatible types in
+assignment (expression has type "datetime", variable has type
+"SQLCoreOperations[DateTime] | DateTime")  [assignment]
+            mapa.fechado_em = datetime.now()
+                              ^~~~~~~~~~~~~~
+src/repositories/tabela_taxas_repository.py:399: error: Unused "type: ignore"
+comment  [unused-ignore]
+            return dias  # type: ignore
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/repositories/tabela_taxas_repository.py:449:30: error: Incompatible types
+in assignment (expression has type "datetime", variable has type
+"SQLCoreOperations[DateTime] | DateTime")  [assignment]
+            mapa.finalizado_em = datetime.now(timezone.utc)
+                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/repositories/tabela_taxas_repository.py:450:27: error: Incompatible types
+in assignment (expression has type "datetime", variable has type
+"SQLCoreOperations[DateTime] | DateTime")  [assignment]
+            mapa.fechado_em = datetime.now(timezone.utc)
+                              ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:35:13: error: Incompatible types in
+assignment (expression has type "None", variable has type Module)  [assignment]
+        Image = None
+                ^~~~
+src/common/validators/image_validator.py:36:5: error: Cannot assign to a type 
+[misc]
+        PILImage = None
+        ^~~~~~~~
+src/common/validators/image_validator.py:36:16: error: Incompatible types in
+assignment (expression has type "None", variable has type "type[Image]") 
+[assignment]
+        PILImage = None
+                   ^~~~
+src/common/validators/image_validator.py:125:35: error: Incompatible types in
+assignment (expression has type "dict[Any, Any]", variable has type
+"ValidationResult | None")  [assignment]
+            self._validation_result = self.validar_arquivo(filepath)
+                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:126:9: error: Returning Any from
+function declared to return "bool"  [no-any-return]
+            return self._validation_result["valido"]
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:126:16: error: Value of type
+"ValidationResult | None" is not indexable  [index]
+            return self._validation_result["valido"]
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:139:12: error: Value of type
+"ValidationResult" is not indexable  [index]
+            if self._validation_result["erros"]:
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:141:17: error: Value of type
+"ValidationResult" is not indexable  [index]
+                    self._validation_result["erros"]
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:146:56: error: Missing type parameters
+for generic type "dict"  [type-arg]
+        def validar_arquivo(self, filepath: Path | str) -> dict:
+                                                           ^
+src/common/validators/image_validator.py:185:53: error: Missing type parameters
+for generic type "dict"  [type-arg]
+        def _to_dict(self, result: ValidationResult) -> dict:
+                                                        ^
+src/common/validators/image_validator.py:275:13: error: Statement is
+unreachable  [unreachable]
+                result.add_warning(
+                ^~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:368:13: error: Statement is
+unreachable  [unreachable]
+                result.add_warning("Pillow não disponível para sanitização...
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:388:31: error: Incompatible types in
+assignment (expression has type "Image", variable has type "ImageFile") 
+[assignment]
+                            img = img.convert("RGBA")
+                                  ^~~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:391:27: error: Incompatible types in
+assignment (expression has type "Image", variable has type "ImageFile") 
+[assignment]
+                        img = bg
+                              ^~
+src/common/validators/image_validator.py:393:27: error: Incompatible types in
+assignment (expression has type "Image", variable has type "ImageFile") 
+[assignment]
+                        img = img.convert("RGB")
+                              ^~~~~~~~~~~~~~~~~~
+src/common/validators/image_validator.py:412:50: error: Missing type parameters
+for generic type "dict"  [type-arg]
+    def validate_image_file(filepath: Path | str) -> dict:
+                                                     ^
+src/common/validators/image_validator.py:435:14: error: "ImageValidator" has no
+attribute "validate"  [attr-defined]
+        result = validator.validate(filepath)
+                 ^~~~~~~~~~~~~~~~~~
+src/common/validators/recibo_validator.py:99:24: error: Argument "recibo_num"
+to "validate_recibo" of "ReciboValidator" has incompatible type "Any | None";
+expected "int | str"  [arg-type]
+                recibo_num=recibo_num,
+                           ^~~~~~~~~~
+src/common/validators/recibo_validator.py:191:13: error: Statement is
+unreachable  [unreachable]
+                result.is_numeric = False
+                ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/recibo_validator.py:259:40: error: Item "None" of
+"TabelaTaxasRepository | None" has no attribute "buscar_por_mes_ano" 
+[union-attr]
+                mapa: TabelaTaxas | None = self._repository.buscar_por_mes...
+                                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/common/validators/recibo_validator.py:276:20: error: Unsupported operand
+types for >= ("int" and "None")  [operator]
+                    if linha.recibo_inicio <= recibo_num <= linha.recibo_f...
+                       ^
+src/common/validators/recibo_validator.py:276:20: note: Left operand is of type "int | None"
+src/common/validators/recibo_validator.py:276:20: error: Unsupported operand
+types for <= ("int" and "None")  [operator]
+                    if linha.recibo_inicio <= recibo_num <= linha.recibo_f...
+                       ^
+src/common/validators/recibo_validator.py:276:20: note: Right operand is of type "int | None"
+src/common/validators/recibo_validator.py:300:44: error: Item "None" of
+"TabelaTaxasRepository | None" has no attribute "buscar_todos"  [union-attr]
+                all_mapas: list[TabelaTaxas] = self._repository.buscar_tod...
+                                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/common/validators/recibo_validator.py:310:24: error: Unsupported operand
+types for >= ("int" and "None")  [operator]
+                        if linha.recibo_inicio <= recibo_num <= linha.reci...
+                           ^
+src/common/validators/recibo_validator.py:310:24: note: Left operand is of type "int | None"
+src/common/validators/recibo_validator.py:310:24: error: Unsupported operand
+types for <= ("int" and "None")  [operator]
+                        if linha.recibo_inicio <= recibo_num <= linha.reci...
+                           ^
+src/common/validators/recibo_validator.py:310:24: note: Right operand is of type "int | None"
+src/frontend/viewmodels/wizard_view_model.py:23:1: error: Module
+"src.db.models.base_mixin" does not explicitly export attribute
+"EstadoDocumento"  [attr-defined]
+    from src.db.models.base_mixin import EstadoDocumento
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:384:43: error: Argument 1 to
+"_is_row_non_empty" of "WizardViewModel" has incompatible type
+"dict[str, float]"; expected "dict[str, object]"  [arg-type]
+                    if self._is_row_non_empty(row)
+                                              ^~~
+src/frontend/viewmodels/wizard_view_model.py:384:43: note: "dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+src/frontend/viewmodels/wizard_view_model.py:384:43: note: Consider using "Mapping" instead, which is covariant in the value type
+src/frontend/viewmodels/wizard_view_model.py:396:17: error: Argument 1 to
+"_check_duplicate_recibos" of "WizardViewModel" has incompatible type
+"list[dict[str, float]]"; expected "list[dict[str, object]]"  [arg-type]
+                    table_data,
+                    ^~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:446:17: error: Unsupported target
+for indexed assignment ("object")  [index]
+                    mapa.wizard_data["dias"][str(dia)] = {
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:470:17: error: Generator has
+incompatible item type "float"; expected "bool"  [misc]
+                    decimal_to_float(row.get("Km", "0"))
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:470:34: error: Argument 1 to
+"decimal_to_float" has incompatible type "float | str"; expected "str" 
+[arg-type]
+                    decimal_to_float(row.get("Km", "0"))
+                                     ^~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:476:17: error: Generator has
+incompatible item type "float"; expected "bool"  [misc]
+                    decimal_to_float(row.get("Setúbal", "0")) +
+                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:476:34: error: Argument 1 to
+"decimal_to_float" has incompatible type "float | str"; expected "str" 
+[arg-type]
+                    decimal_to_float(row.get("Setúbal", "0")) +
+                                     ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:477:34: error: Argument 1 to
+"decimal_to_float" has incompatible type "float | str"; expected "str" 
+[arg-type]
+                    decimal_to_float(row.get("Santarém", "0")) +
+                                     ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:478:34: error: Argument 1 to
+"decimal_to_float" has incompatible type "float | str"; expected "str" 
+[arg-type]
+                    decimal_to_float(row.get("Évora", "0"))
+                                     ^~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:495:35: error: Incompatible types
+in assignment (expression has type "object", variable has type "str") 
+[assignment]
+                zona_primaria: str  = self.get_form_field("zona_primaria",...
+                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:496:37: error: Incompatible types
+in assignment (expression has type "object", variable has type "str") 
+[assignment]
+                zona_secundaria: str  = self.get_form_field("zona_secundar...
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:532:13: error: Unsupported target
+for indexed assignment ("object")  [index]
+                mapa.wizard_data["dias"][str(dia)] = {
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:558:62: error: "object" has no
+attribute "keys"  [attr-defined]
+    ...logger.info(f"   wizard_data['dias'] keys: {list(mapa.wizard_data.get(...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:559:68: error: Unsupported right
+operand type for in ("object")  [operator]
+    ...a.wizard_data and "dias" in mapa.wizard_data and str(dia) in mapa.wiza...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:560:35: error: Value of type
+"object" is not indexable  [index]
+                    dados_dia_antes = mapa.wizard_data["dias"][str(dia)]
+                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:578:62: error: "object" has no
+attribute "keys"  [attr-defined]
+    ...logger.info(f"   wizard_data['dias'] keys: {list(mapa.wizard_data.get(...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:579:68: error: Unsupported right
+operand type for in ("object")  [operator]
+    ...a.wizard_data and "dias" in mapa.wizard_data and str(dia) in mapa.wiza...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:580:36: error: Value of type
+"object" is not indexable  [index]
+                    dados_dia_depois = mapa.wizard_data["dias"][str(dia)]
+                                       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:614:62: error: "object" has no
+attribute "keys"  [attr-defined]
+    ...logger.info(f"   wizard_data['dias'] keys: {list(mapa.wizard_data.get(...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:615:68: error: Unsupported right
+operand type for in ("object")  [operator]
+    ...a.wizard_data and "dias" in mapa.wizard_data and str(dia) in mapa.wiza...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:616:37: error: Value of type
+"object" is not indexable  [index]
+                    dados_dia_refresh = mapa.wizard_data["dias"][str(dia)]
+                                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:648:74: error: Unsupported right
+operand type for in ("object")  [operator]
+    ...wizard_data or "dias" not in mapa.wizard_data or dia_key not in mapa.w...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:653:30: error: Value of type
+"object" is not indexable  [index]
+                dados_gravados = mapa.wizard_data["dias"][dia_key]
+                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:745:24: error: Unsupported right
+operand type for in ("object")  [operator]
+                        if dia_key in mapa.wizard_data["dias"]:
+                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:746:25: error: "object" has no
+attribute "__delitem__"  [attr-defined]
+                            del mapa.wizard_data["dias"][dia_key]
+                            ^
+src/frontend/viewmodels/wizard_view_model.py:806:28: error: Unsupported right
+operand type for in ("object")  [operator]
+                            if str(dia) in mapa_verificacao.wizard_data["d...
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:897:30: error: No overload variant
+of "int" matches argument type "object"  [call-overload]
+                    recibo_num = int(recibo_num_str)
+                                 ^~~~~~~~~~~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:897:30: note: Possible overload variants:
+src/frontend/viewmodels/wizard_view_model.py:897:30: note:     def int(str | Buffer | SupportsInt | SupportsIndex = ..., /) -> int
+src/frontend/viewmodels/wizard_view_model.py:897:30: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+src/frontend/viewmodels/wizard_view_model.py:999: error: Unused "type: ignore"
+comment  [unused-ignore]
+                        self._form_data = dict(mapa.wizard_data)  # type: ...
+                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/viewmodels/wizard_view_model.py:1044:39: error: Argument 1 to
+"append" of "list" has incompatible type
+"dict[str, str | int | dict[str, str | bool]]"; expected "dict[str, object]" 
+[arg-type]
+                        table_data.append(row)
+                                          ^~~
+src/frontend/viewmodels/wizard_view_model.py:1044:39: note: "dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+src/frontend/viewmodels/wizard_view_model.py:1044:39: note: Consider using "Mapping" instead, which is covariant in the value type
+src/frontend/viewmodels/wizard_view_model.py:1046:36: error: Incompatible types
+in assignment (expression has type "list[dict[str, object]]", variable has type
+"list[dict[str, float]]")  [assignment]
+                    self._table_data = table_data
+                                       ^~~~~~~~~~
+src/frontend/viewmodels/wizard_view_model.py:1062:13: error: Incompatible types
+in assignment (expression has type "dict[str, float]", variable has type
+"dict[str, str | int | dict[str, str | bool]]")  [assignment]
+                for i, row in enumerate(self._table_data, 1):
+                ^
+src/frontend/viewmodels/recibos_table_viewmodel.py:208:49: error: Argument 1 to
+"validate_positive_number" has incompatible type "str"; expected "float | int" 
+[arg-type]
+                    if not validate_positive_number(normalized_value):
+                                                    ^~~~~~~~~~~~~~~~
+src/frontend/viewmodels/recibos_table_viewmodel.py:462:38: error: Argument 1 to
+"validate_positive_int" has incompatible type "str"; expected "int"  [arg-type]
+            if not validate_positive_int(new_value):
+                                         ^~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:153: error: Unused
+"type: ignore" comment  [unused-ignore]
+                qtd = int(quantidade)  # type: ignore[arg-type]
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:153:19: error: No overload
+variant of "int" matches argument type "object"  [call-overload]
+                qtd = int(quantidade)  # type: ignore[arg-type]
+                      ^~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:153:19: note: Error code "call-overload" not covered by "type: ignore" comment
+src/frontend/wizard/viewmodels/form_viewmodel.py:153:19: note: Possible overload variants:
+src/frontend/wizard/viewmodels/form_viewmodel.py:153:19: note:     def int(str | Buffer | SupportsInt | SupportsIndex = ..., /) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:153:19: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:154: error: Unused
+"type: ignore" comment  [unused-ignore]
+                inicio = int(recibo_inicio)  # type: ignore[arg-type]
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:154:22: error: No overload
+variant of "int" matches argument type "object"  [call-overload]
+                inicio = int(recibo_inicio)  # type: ignore[arg-type]
+                         ^~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:154:22: note: Error code "call-overload" not covered by "type: ignore" comment
+src/frontend/wizard/viewmodels/form_viewmodel.py:154:22: note: Possible overload variants:
+src/frontend/wizard/viewmodels/form_viewmodel.py:154:22: note:     def int(str | Buffer | SupportsInt | SupportsIndex = ..., /) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:154:22: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:199: error: Unused
+"type: ignore" comment  [unused-ignore]
+                inicio = int(recibo_inicio)  # type: ignore[arg-type]
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:199:22: error: No overload
+variant of "int" matches argument type "object"  [call-overload]
+                inicio = int(recibo_inicio)  # type: ignore[arg-type]
+                         ^~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:199:22: note: Error code "call-overload" not covered by "type: ignore" comment
+src/frontend/wizard/viewmodels/form_viewmodel.py:199:22: note: Possible overload variants:
+src/frontend/wizard/viewmodels/form_viewmodel.py:199:22: note:     def int(str | Buffer | SupportsInt | SupportsIndex = ..., /) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:199:22: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:200: error: Unused
+"type: ignore" comment  [unused-ignore]
+                fim = int(recibo_fim)  # type: ignore[arg-type]
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:200:19: error: No overload
+variant of "int" matches argument type "object"  [call-overload]
+                fim = int(recibo_fim)  # type: ignore[arg-type]
+                      ^~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/form_viewmodel.py:200:19: note: Error code "call-overload" not covered by "type: ignore" comment
+src/frontend/wizard/viewmodels/form_viewmodel.py:200:19: note: Possible overload variants:
+src/frontend/wizard/viewmodels/form_viewmodel.py:200:19: note:     def int(str | Buffer | SupportsInt | SupportsIndex = ..., /) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:200:19: note:     def int(str | bytes | bytearray, /, base: SupportsIndex) -> int
+src/frontend/wizard/viewmodels/form_viewmodel.py:303:47: error: Argument 1 to
+"len" has incompatible type "object"; expected "Sized"  [arg-type]
+                        f"Mapa carregado com {len(mapa.wizard_data['dias']...
+                                                  ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/recibos_table.py:252:50: error: Incompatible types in
+assignment (expression has type "dict[str, object] | None", variable has type
+"dict[str, str] | None")  [assignment]
+                recibo_data: dict[str, str] | None = self._viewmodel.get_d...
+                                                     ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/recibos_table.py:555: error: Unused "type: ignore" comment 
+[unused-ignore]
+                        if item is not None and self.item(row, col) is ite...
+                        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/recibos_table.py:607:16: error: Incompatible return value
+type (got "list[dict[str, object]]", expected
+"list[dict[str, str | dict[str, str | bool]]]")  [return-value]
+            return self._viewmodel.get_data()
+                   ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/viewmodels/wizard_coordinator.py:102:12: error: Unsupported
+operand types for <= ("int" and "None")  [operator]
+            if current_stage >= 3:
+               ^
+src/frontend/wizard/viewmodels/wizard_coordinator.py:102:12: note: Left operand is of type "int | None"
+src/frontend/wizard/viewmodels/wizard_coordinator.py:146:12: error: Unsupported
+operand types for >= ("int" and "None")  [operator]
+            if current_stage <= 1:
+               ^
+src/frontend/wizard/viewmodels/wizard_coordinator.py:146:12: note: Left operand is of type "int | None"
+src/frontend/views/wizard_view.py:31:1: error: Module
+"src.db.models.base_mixin" does not explicitly export attribute
+"EstadoDocumento"  [attr-defined]
+    from src.db.models.base_mixin import EstadoDocumento
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:36:1: error: Module
+"src.frontend.views.wizard_logic" does not explicitly export attribute
+"ValidationResult"  [attr-defined]
+    from src.frontend.views.wizard_logic import (
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:281:20: error: Argument "parent" to
+"VerticalBarChart" has incompatible type "WizardPage1"; expected
+"BaseChart | None"  [arg-type]
+                parent=self, theme_manager=self.theme_manager
+                       ^~~~
+src/frontend/views/wizard_view.py:347:35: error: Argument 1 to
+"validate_positive_int" has incompatible type "str"; expected "int"  [arg-type]
+                validate_positive_int(qtd_text),
+                                      ^~~~~~~~
+src/frontend/views/wizard_view.py:348:35: error: Argument 1 to
+"validate_positive_int" has incompatible type "str"; expected "int"  [arg-type]
+                validate_positive_int(inicio_text),
+                                      ^~~~~~~~~~~
+src/frontend/views/wizard_view.py:349:35: error: Argument 1 to
+"validate_positive_int" has incompatible type "str"; expected "int"  [arg-type]
+                validate_positive_int(fim_text)
+                                      ^~~~~~~~
+src/frontend/views/wizard_view.py:512:44: error: Argument 1 to "set_table_data"
+of "WizardViewModel" has incompatible type
+"list[dict[str, str | dict[str, str | bool]]]"; expected
+"list[dict[str, float]]"  [arg-type]
+                self._viewmodel.set_table_data(table_data)
+                                               ^~~~~~~~~~
+src/frontend/views/wizard_view.py:538:38: error: Argument 1 to "int" has
+incompatible type "str | dict[str, str | bool]"; expected
+"str | Buffer | SupportsInt | SupportsIndex"  [arg-type]
+                        recibo_num = int(recibo_str)
+                                         ^~~~~~~~~~
+src/frontend/views/wizard_view.py:588:62: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ...._viewmodel.set_form_field("quantidade_recibos", self.input_qtd.text()...
+                                                        ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:589:57: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ... self._viewmodel.set_form_field("recibo_inicio", self.input_inicio.tex...
+                                                        ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:590:54: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ...    self._viewmodel.set_form_field("recibo_fim", self.input_fim.text()...
+                                                        ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:595:13: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+                self.input_gasoleo_valor.text() if self.checkbox_gasoleo.i...
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:599:13: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+                self.input_gasoleo_litros.text() if self.checkbox_gasoleo....
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:601:50: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+            self._viewmodel.set_form_field("almoco", self.input_almoco.tex...
+                                                     ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:602:59: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ...elf._viewmodel.set_form_field("despesas_gerais", self.input_despesas_g...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:607:44: error: Argument 1 to "set_table_data"
+of "WizardViewModel" has incompatible type
+"list[dict[str, str | dict[str, str | bool]]]"; expected
+"list[dict[str, float]]"  [arg-type]
+                self._viewmodel.set_table_data(table_data)
+                                               ^~~~~~~~~~
+src/frontend/views/wizard_view.py:796:57: error: Argument 1 to "setChecked" of
+"QAbstractButton" has incompatible type "object"; expected "bool"  [arg-type]
+    ...          self.page1.checkbox_serv_interno.setChecked(servico_interno)
+                                                             ^~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:797:52: error: Argument 1 to "setChecked" of
+"QAbstractButton" has incompatible type "object"; expected "bool"  [arg-type]
+                self.page1.checkbox_gasoleo.setChecked(gasoleo)
+                                                       ^~~~~~~
+src/frontend/views/wizard_view.py:823:69: error: Argument 1 to
+"load_data_from_saved" of "RecibosTableViewModel" has incompatible type
+"list[dict[str, float]]"; expected "list[dict[str, object]]"  [arg-type]
+    ...   self.page1.recibos_table.viewmodel.load_data_from_saved(table_data)
+                                                                  ^~~~~~~~~~
+src/frontend/views/wizard_view.py:926:66: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ...._viewmodel.set_form_field("quantidade_recibos", self.page1.input_qtd....
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:927:61: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ... self._viewmodel.set_form_field("recibo_inicio", self.page1.input_inic...
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:928:58: error: Argument 2 to "set_form_field"
+of "WizardViewModel" has incompatible type "str"; expected "float"  [arg-type]
+    ...    self._viewmodel.set_form_field("recibo_fim", self.page1.input_fim....
+                                                        ^~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/wizard_view.py:945:71: error: Argument 1 to
+"save_current_day" of "WizardViewModel" has incompatible type "QDate | None";
+expected "QDate"  [arg-type]
+    ... message = await self._viewmodel.save_current_day(self._selected_date)
+                                                         ^~~~~~~~~~~~~~~~~~~
+src/frontend/views/wizard_view.py:955:28: error: Item "None" of "QDate | None"
+has no attribute "toString"  [union-attr]
+                    date_str = self._selected_date.toString("dd/MM/yyyy")
+                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/wizard/views/form_view.py:266:24: error: "QWidget" has no
+attribute "isReadOnly"  [attr-defined]
+                    if not widget.isReadOnly()
+                           ^~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:30:1: error: Module
+"src.frontend.views.calendar_dashboard" has no attribute "CalendarDashboard" 
+[attr-defined]
+    from src.frontend.views.calendar_dashboard import CalendarDashboard
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:31:1: error: Module
+"src.frontend.views.controller" has no attribute "CalendarController" 
+[attr-defined]
+    from src.frontend.views.controller import CalendarController
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:39:5: error: Function is missing a type
+annotation for one or more arguments  [no-untyped-def]
+        def __init__(self, text: str, icon: str = "", parent=None) -> None...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:52:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:59:29: error: Call to untyped function
+"IconManager" in typed context  [no-untyped-call]
+            self.icon_manager = IconManager()
+                                ^~~~~~~~~~~~~
+src/frontend/views/main_view.py:132:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def set_active_page(self, page_name: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:150:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _on_page_changed(self, page_name: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:162:5: error: Function is missing a type
+annotation for one or more arguments  [no-untyped-def]
+        def __init__(self, theme_manager: ThemeManager, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:166:29: error: Call to untyped function
+"IconManager" in typed context  [no-untyped-call]
+            self.icon_manager = IconManager()
+                                ^~~~~~~~~~~~~
+src/frontend/views/main_view.py:247:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def set_page_title(self, title: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:251:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def set_status(self, status: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:259:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:305:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def set_progress(self, value: int, message: str = "A carregar...")...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:320:13: error: Call to untyped function
+"_hide_progress" in typed context  [no-untyped-call]
+                self._hide_progress()
+                ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:322:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _hide_progress(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:322:5: note: Use "-> None" if function does not return a value
+src/frontend/views/main_view.py:335:5: error: Function is missing a type
+annotation  [no-untyped-def]
+        def __init__(self, parent=None):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:355:27: error: Call to untyped function
+"create_upper_grid" in typed context  [no-untyped-call]
+            self.upper_grid = self.create_upper_grid()
+                              ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:358:27: error: Call to untyped function
+"create_lower_grid" in typed context  [no-untyped-call]
+            self.lower_grid = self.create_lower_grid()
+                              ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:443:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def create_upper_grid(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:523:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def create_lower_grid(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:540:5: error: Function is missing a type
+annotation for one or more arguments  [no-untyped-def]
+        def __init__(self, viewmodel: MainViewModel | None = None, parent=...
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~...
+src/frontend/views/main_view.py:550:30: error: Call to untyped function
+"StyleManager" in typed context  [no-untyped-call]
+            self.style_manager = StyleManager()
+                                 ^~~~~~~~~~~~~~
+src/frontend/views/main_view.py:560:24: error: Call to untyped function
+"Sidebar" in typed context  [no-untyped-call]
+            self.sidebar = Sidebar()
+                           ^~~~~~~~~
+src/frontend/views/main_view.py:562:23: error: Call to untyped function
+"Footer" in typed context  [no-untyped-call]
+            self.footer = Footer()
+                          ^~~~~~~~
+src/frontend/views/main_view.py:580:31: error: Call to untyped function
+"DashboardPage" in typed context  [no-untyped-call]
+            self.dashboard_page = DashboardPage()
+                                  ^~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:618:9: error: "QWidget" has no attribute
+"_viewmodel"  [attr-defined]
+            self.pages["wizard"]._viewmodel.day_saved.connect(
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:623:9: error: "QWidget" has no attribute
+"_viewmodel"  [attr-defined]
+            self.pages["wizard"]._viewmodel.data_modified.connect(
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:635:9: error: "QWidget" has no attribute
+"loading_progress"  [attr-defined]
+            self.pages["wizard"].loading_progress.connect(self.footer.set_...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:636:9: error: "QWidget" has no attribute
+"_viewmodel"  [attr-defined]
+            self.pages["wizard"]._viewmodel.saving_progress.connect(self.f...
+            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:639:9: error: Call to untyped function
+"_connect_signals" in typed context  [no-untyped-call]
+            self._connect_signals()
+            ^~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:660:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _connect_signals(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:660:5: note: Use "-> None" if function does not return a value
+src/frontend/views/main_view.py:672:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _on_page_changed(self, page_name: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:677:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _on_viewmodel_page_changed(self, page_name: str):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:693:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _on_theme_toggle_requested(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/views/main_view.py:693:5: note: Use "-> None" if function does not return a value
+src/frontend/views/main_view.py:698:5: error: Function is missing a return type
+annotation  [no-untyped-def]
+        def _on_viewmodel_theme_changed(self, theme: Theme):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:35:5: error: Function is missing a return type annotation 
+[no-untyped-def]
+        def __init__(self):
+        ^~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:35:5: note: Use "-> None" if function does not return a value
+src/frontend/main.py:40:39: error: Missing type parameters for generic type
+"Task"  [type-arg]
+            self.current_worker: Optional[asyncio.Task] = None
+                                          ^
+src/frontend/main.py:43:9: error: Call to untyped function "_setup_logging" in
+typed context  [no-untyped-call]
+            self._setup_logging()
+            ^~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:45:5: error: Function is missing a return type annotation 
+[no-untyped-def]
+        def _setup_logging(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:45:5: note: Use "-> None" if function does not return a value
+src/frontend/main.py:61:5: error: Function is missing a return type annotation 
+[no-untyped-def]
+        async def initialize(self):
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:66:20: error: Incompatible types in assignment (expression
+has type "QCoreApplication | None", variable has type "QApplication | None") 
+[assignment]
+            self.app = QApplication.instance()
+                       ^~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:109:31: error: Call to untyped function "StatusManager" in
+typed context  [no-untyped-call]
+            self.status_manager = StatusManager(self.main_view.navbar)
+                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:117:29: error: Need type annotation for "_exit_future" 
+[var-annotated]
+            self._exit_future = asyncio.Future()
+                                ^~~~~~~~~~~~~~~~
+src/frontend/main.py:121:9: error: Function is missing a return type annotation
+ [no-untyped-def]
+            def on_quit():
+            ^~~~~~~~~~~~~~
+src/frontend/main.py:121:9: note: Use "-> None" if function does not return a value
+src/frontend/main.py:205:1: error: Function is missing a type annotation 
+[no-untyped-def]
+    async def shutdown(loop, signal=None):
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:223:1: error: Function is missing a return type annotation
+ [no-untyped-def]
+    async def main():
+    ^~~~~~~~~~~~~~~~~
+src/frontend/main.py:226:19: error: Call to untyped function
+"ApplicationManager" in typed context  [no-untyped-call]
+        app_manager = ApplicationManager()
+                      ^~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:230:27: error: Call to untyped function "initialize" in
+typed context  [no-untyped-call]
+            exit_code = await app_manager.initialize()
+                              ^~~~~~~~~~~~~~~~~~~~~~~~
+src/frontend/main.py:258:49: error: Call to untyped function "main" in typed
+context  [no-untyped-call]
+                exit_code = loop.run_until_complete(main())
+                                                    ^~~~~~
+src/frontend/main.py:273:41: error: Call to untyped function "shutdown" in
+typed context  [no-untyped-call]
+                    loop.run_until_complete(shutdown(loop))
+                                            ^~~~~~~~~~~~~~
+src/main.py:17: error: Unused "type: ignore" comment  [unused-ignore]
+    import qasync  # type: ignore[import-not-found]
+    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/main.py:44:49: error: Call to untyped function "main" in typed context 
+[no-untyped-call]
+                exit_code = loop.run_until_complete(main())
+                                                    ^~~~~~
+Found 305 errors in 33 files (checked 89 source files)

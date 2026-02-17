@@ -76,10 +76,10 @@ class ExcelValidator(BaseValidator):
     ) -> None:
         """Initialize validator."""
         super().__init__()  # Chamar pai
-        self.max_file_size_mb = max_file_size_mb
-        self.max_rows = max_rows
-        self.allow_macros = allow_macros
-        self.allow_external_links = allow_external_links
+        self.max_file_size_mb: float = max_file_size_mb
+        self.max_rows: int = max_rows
+        self.allow_macros: bool = allow_macros
+        self.allow_external_links: bool = allow_external_links
         self._validation_result: ValidationResult | None = None
 
     def is_valid(self, data: Path | str) -> bool:
@@ -104,7 +104,7 @@ class ExcelValidator(BaseValidator):
         if self._validation_result is None:
             return {}
 
-        errors = {}
+        errors: dict[str, str] = {}
 
         # Converter erros do resultado
         if self._validation_result["erros"]:
@@ -115,7 +115,9 @@ class ExcelValidator(BaseValidator):
 
         return errors
 
-    def validar_arquivo(self, filepath: Path | str) -> dict:
+    def validar_arquivo(
+            self, filepath: Path | str
+            ) -> dict[int | str, str | int | bool]:
         """Valida ficheiro Excel.
 
         Args:
@@ -153,7 +155,7 @@ class ExcelValidator(BaseValidator):
 
         return self._to_dict(result)
 
-    def _to_dict(self, result: ValidationResult) -> dict:
+    def _to_dict(self, result: ValidationResult) -> dict[str, object]:
         """Converte ValidationResult para dicionário."""
         return {
             "valido": result.is_safe and result.is_valid_excel,
@@ -181,8 +183,8 @@ class ExcelValidator(BaseValidator):
 
     def _check_file_size(self, filepath: Path, result: ValidationResult) -> bool:
         """Verifica tamanho do ficheiro."""
-        size_bytes = filepath.stat().st_size
-        size_mb = size_bytes / (1024 * 1024)
+        size_bytes: int = filepath.stat().st_size
+        size_mb: float = size_bytes / (1024 * 1024)
         result.file_size_mb = round(size_mb, 2)
 
         if size_mb > self.max_file_size_mb:
@@ -250,7 +252,7 @@ class ExcelValidator(BaseValidator):
         if ext == ".xlsx":
             try:
                 with zipfile.ZipFile(filepath, "r") as zf:
-                    names = zf.namelist()
+                    names: list[str] = zf.namelist()
                     if any("vbaProject" in name for name in names):
                         result.has_macros = True
                         result.add_error(
@@ -280,7 +282,7 @@ class ExcelValidator(BaseValidator):
             total_rows = 0
 
             for sheet_name in wb.sheetnames:
-                sheet = wb[sheet_name]
+                sheet: _WorksheetOrChartsheetLike = wb[sheet_name]
 
                 # Verificar dimensões
                 if sheet.max_row and sheet.max_row > self.max_rows:
@@ -337,7 +339,7 @@ class ExcelValidator(BaseValidator):
             for row in sheet.iter_rows(max_row=50, max_col=20):
                 for cell in row:
                     if cell.value and isinstance(cell.value, str):
-                        value = cell.value
+                        value: str = cell.value
                         # Verificar URLs
                         if any(
                             proto in value.lower()
@@ -353,7 +355,7 @@ class ExcelValidator(BaseValidator):
             pass
 
 
-def validate_excel_file(filepath: Path | str) -> dict:
+def validate_excel_file(filepath: Path | str) -> dict[str, object]:
     """Função de conveniência para validar ficheiro Excel.
 
     Args:

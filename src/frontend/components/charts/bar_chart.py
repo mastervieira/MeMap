@@ -16,7 +16,7 @@ class VerticalBarChart(BaseChart):
 
     def __init__(
         self,
-        parent=None,
+        parent: BaseChart | None = None,
         theme_manager: ThemeManager | None = None,
         title: str = "",
     ) -> None:
@@ -28,7 +28,7 @@ class VerticalBarChart(BaseChart):
             title: Título do gráfico
         """
         super().__init__(parent, theme_manager)
-        self.title = title
+        self.title: str = title
         self._data: dict[str, float] = {}
         self._bar_items: list[pg.BarGraphItem] = []
 
@@ -85,8 +85,8 @@ class VerticalBarChart(BaseChart):
         self._bar_items.clear()
 
         # Prepara dados
-        premio = self._data.get("Prémio", 0.0)
-        gastos = self._data.get("Gastos", 0.0)
+        premio: float = self._data.get("Prémio", 0.0)
+        gastos: float = self._data.get("Gastos", 0.0)
 
         # Posições das barras (x)
         x_positions: list[int] = [0, 1]

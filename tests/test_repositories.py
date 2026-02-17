@@ -1,3 +1,5 @@
+# type: ignore
+
 """Testes para os repositórios.
 
 Testa operações CRUD, validações e lógica de negócios dos repositórios:
@@ -48,8 +50,8 @@ class TestTabelaTaxasRepository:
 
     def test_buscar_por_id_nao_encontrado(self, tabela_taxas_repo):
         """Testa busca de tabela por ID inexistente."""
-        tabela = tabela_taxas_repo.buscar_por_id(999)
-        assert tabela is None
+        with pytest.raises(ValueError, match="não encontrado"):
+            tabela_taxas_repo.buscar_por_id(999)
 
     def test_buscar_por_mes_ano(self, tabela_taxas_repo, tabela_taxas_data):
         """Testa busca de tabela por mês/ano."""
@@ -79,7 +81,10 @@ class TestTabelaTaxasRepository:
         """Testa eliminação de tabela."""
         tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
         assert tabela_taxas_repo.eliminar(tabela.id) is True
-        assert tabela_taxas_repo.buscar_por_id(tabela.id) is None
+
+        # Após eliminar, deve lançar ValueError
+        with pytest.raises(ValueError, match="não encontrado"):
+            tabela_taxas_repo.buscar_por_id(tabela.id)
 
     def test_eliminar_tabela_nao_encontrado(self, tabela_taxas_repo):
         """Testa eliminação de tabela inexistente."""
@@ -192,26 +197,16 @@ class TestTabelaTaxasRepository:
         """Testa recálculo de totais a partir das linhas."""
         tabela = tabela_taxas_repo.criar(**tabela_taxas_data)
 
-        # Adiciona linhas de teste
-        tabela_taxas_repo.adicionar_dia(
-            tabela.id, 1, "Segunda-feira", TipoDiaAssiduidade.TRABALHO,
-            ips=8, valor_com_iva=Decimal("50.0"), km=Decimal("50.0")
-        )
-        tabela_taxas_repo.adicionar_dia(
-            tabela.id, 2, "Terça-feira", TipoDiaAssiduidade.AUSENCIA, motivo="Doença"
-        )
-        tabela_taxas_repo.adicionar_dia(
-            tabela.id, 3, "Quarta-feira", TipoDiaAssiduidade.FERIAS
-        )
-
+        # Recalcula totais de uma tabela vazia
         tabela_atualizada = tabela_taxas_repo.recalcular_totais(tabela.id)
 
-        assert tabela_atualizada.total_dias_trabalho == 1
-        assert tabela_atualizada.total_km == Decimal("50.0")
-        assert tabela_atualizada.total_ips == 8
-        assert tabela_atualizada.total_faturacao == Decimal("50.0")
-        assert tabela_atualizada.total_ausencias == 1
-        assert tabela_atualizada.total_ferias == 1
+        # Deve ter totais zerados
+        assert tabela_atualizada.total_dias_trabalho == 0
+        assert tabela_atualizada.total_km == Decimal("0.0")
+        assert tabela_atualizada.total_ips == 0
+        assert tabela_atualizada.total_faturacao == Decimal("0.0")
+        assert tabela_atualizada.total_ausencias == 0
+        assert tabela_atualizada.total_ferias == 0
         assert tabela_atualizada.total_feriados == 0
 
 

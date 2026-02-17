@@ -8,7 +8,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QStackedWidget, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QMessageBox,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from src.frontend.wizard.viewmodels import WizardCoordinator
@@ -97,9 +102,33 @@ class WizardView(QWidget):
     def _on_wizard_completed(self) -> None:
         """Handle wizard completion."""
         logger.info("Wizard completed")
-        # TODO: Close window or show success message
+
+        # Show success message
+        reply = QMessageBox.information(
+            self,
+            "Sucesso",
+            "Wizard concluído com sucesso!\n\nOs dados foram salvos.",
+            QMessageBox.StandardButton.Ok,
+        )
+
+        # Close window
+        self.close()
 
     def _on_wizard_cancelled(self) -> None:
         """Handle wizard cancellation."""
         logger.info("Wizard cancelled")
-        # TODO: Close window
+
+        # Ask for confirmation
+        reply = QMessageBox.question(
+            self,
+            "Confirmar Cancelamento",
+            "Tem certeza que deseja cancelar?\nOs dados não salvos serão perdidos.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            # Close window
+            self.close()
+        else:
+            # User cancelled the cancellation - do nothing
+            logger.info("Cancelamento de wizard foi cancelado")

@@ -174,6 +174,10 @@ class FormView(QWidget):
             self._on_validation_cleared
         )
 
+        # Navigation buttons → Coordinator
+        # Note: Coordinator is not directly accessible here
+        # Will be connected at application level during initialization
+
     @Slot(int)
     def _on_recibo_fim_calculated(self, recibo_fim: int) -> None:
         """Update recibo_fim field when auto-calculated.
@@ -239,7 +243,15 @@ class FormView(QWidget):
     def _on_validation_success(self) -> None:
         """Handle successful validation."""
         logger.info("✓ Validação do formulário bem-sucedida")
-        # TODO: Enable next button or show success indicator
+
+        # Enable next button
+        self.next_button.setEnabled(True)
+
+        # Clear error label
+        self.error_label.setVisible(False)
+
+        # Visual feedback: green border briefly
+        self._highlight_field(self.next_button, "success")
 
     def _highlight_field(
         self, widget: QWidget, highlight_type: str

@@ -31,8 +31,8 @@ class ToastConfig:
     DEDUP_WINDOW_MS: Final[int] = 2000
 
     # Dimensions (pixels)
-    WIDTH: Final[int] = 350
-    MIN_HEIGHT: Final[int] = 64
+    WIDTH: Final[int] = 500
+    MIN_HEIGHT: Final[int] = 150
 
     # Positioning (pixels)
     MARGIN: Final[int] = 20
@@ -63,7 +63,7 @@ class ToastConfig:
         Returns:
             Display duration in milliseconds
         """
-        durations = {
+        durations: dict[ToastType, int] = {
             ToastType.SUCCESS: self.DURATION_SUCCESS,
             ToastType.ERROR: self.DURATION_ERROR,
             ToastType.INFO: self.DURATION_INFO,

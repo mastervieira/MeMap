@@ -11,7 +11,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import  Optional
 
 from sqlalchemy.orm import Session, joinedload
 
@@ -23,7 +23,7 @@ from src.db.models.mapas import (
     MapaTaxasLinha,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class MapaTaxasRepository:
@@ -43,7 +43,7 @@ class MapaTaxasRepository:
         Args:
             session: Sessão do SQLAlchemy
         """
-        self._session = session
+        self._session: Session = session
 
     @property
     def session(self) -> Session:
@@ -59,8 +59,8 @@ class MapaTaxasRepository:
         mes: int | None = None,
         ano: int | None = None,
         estado: EstadoDocumento = EstadoDocumento.RASCUNHO,
-        wizard_data: dict[str, Any] | None = None,
-        **kwargs: Any,
+        wizard_data: dict[str, object] | None = None,
+        **kwargs: object,
     ) -> MapaTaxas:
         """Cria novo Mapa de Taxas.
 

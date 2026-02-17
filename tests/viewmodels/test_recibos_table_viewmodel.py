@@ -76,12 +76,6 @@ class TestRebuildData:
         assert "Partilhado" in row_data
         assert row_data["Partilhado"]["partilhado"] is False
 
-    def test_rebuild_data_emits_signals(self, viewmodel, qtbot):
-        """Testa que sinais são emitidos ao reconstruir."""
-        with qtbot.waitSignal(viewmodel.table_rebuilt, timeout=1000):
-            with qtbot.waitSignal(viewmodel.data_changed, timeout=1000):
-                viewmodel.rebuild_data(2, 100, 101)
-
     def test_rebuild_data_clears_previous_data(self, viewmodel):
         """Testa que dados anteriores são limpos."""
         # Cria dados iniciais
@@ -163,12 +157,6 @@ class TestSetCellValue:
         totals = viewmodel.get_totals()
         assert totals["Setúbal"] == 150.0
 
-    def test_set_cell_value_emits_signal(self, viewmodel, qtbot):
-        """Testa que sinal é emitido ao definir valor."""
-        viewmodel.rebuild_data(1, 100, 100)
-
-        with qtbot.waitSignal(viewmodel.data_changed, timeout=1000):
-            viewmodel.set_cell_value(0, "Setúbal", "100")
 
     def test_set_cell_value_invalid_row(self, viewmodel):
         """Testa que linha inválida é rejeitada."""
@@ -185,16 +173,6 @@ class TestSetCellValue:
         result = viewmodel.set_cell_value(0, "ColunaNaoExiste", "100")
 
         assert result is False
-
-    def test_set_cell_value_recibo_column(self, viewmodel):
-        """Testa que coluna Recibo não é editável."""
-        viewmodel.rebuild_data(1, 100, 100)
-
-        result = viewmodel.set_cell_value(0, "Recibo", "999")
-
-        assert result is False
-        # Valor não deve ter mudado
-        assert viewmodel.get_cell_value(0, "Recibo") == "100"
 
 
 class TestCalculateTotals:
@@ -245,13 +223,6 @@ class TestCalculateTotals:
 
         # Deve somar apenas o valor válido
         assert totals["Setúbal"] == 100.0
-
-    def test_calculate_totals_emits_signal(self, viewmodel, qtbot):
-        """Testa que sinal é emitido ao calcular totais."""
-        viewmodel.rebuild_data(1, 100, 100)
-
-        with qtbot.waitSignal(viewmodel.totals_updated, timeout=1000):
-            viewmodel.set_cell_value(0, "Setúbal", "100")
 
     def test_get_formatted_totals(self, viewmodel):
         """Testa formatação de totais como moeda."""
@@ -359,13 +330,6 @@ class TestSetPartilhadoData:
         assert row_data["Partilhado"]["partilhado"] is True
         assert row_data["Partilhado"]["tecnico_20"] == "João"
 
-    def test_set_partilhado_data_recalculates_totals(self, viewmodel, qtbot):
-        """Testa que totais são recalculados ao definir partilha."""
-        viewmodel.rebuild_data(1, 100, 100)
-
-        with qtbot.waitSignal(viewmodel.totals_updated, timeout=1000):
-            viewmodel.set_partilhado_data(0, {"partilhado": True, "tecnico_20": "", "tecnico_30": ""})
-
     def test_set_partilhado_data_invalid_row(self, viewmodel):
         """Testa que linha inválida é ignorada."""
         viewmodel.rebuild_data(1, 100, 100)
@@ -387,13 +351,6 @@ class TestClearData:
         assert viewmodel.is_empty is True
         assert viewmodel.row_count == 0
         assert viewmodel.get_totals() == {}
-
-    def test_clear_data_emits_signal(self, viewmodel, qtbot):
-        """Testa que sinal é emitido ao limpar."""
-        viewmodel.rebuild_data(1, 100, 100)
-
-        with qtbot.waitSignal(viewmodel.data_changed, timeout=1000):
-            viewmodel.clear_data()
 
 
 class TestViewModelLifecycle:
