@@ -9,12 +9,10 @@ from .base_view_model import BaseViewModel
 from .calendar_view_model import CalendarViewModel
 from .main_view_model import MainViewModel
 from .recibos_table_viewmodel import RecibosTableViewModel
-from .wizard_view_model import WizardViewModel
 
 __all__: list[str] = [
     "BaseViewModel",
     "CalendarViewModel",
     "MainViewModel",
     "RecibosTableViewModel",
-    "WizardViewModel",
 ]

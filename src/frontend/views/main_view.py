@@ -26,7 +26,8 @@ from src.frontend.styles.component_styles import (
     FooterStyles,
     DashboardPageStyles,
 )
-from src.frontend.views.wizard_view import GuidedFormWizard
+# Legacy GuidedFormWizard removed - see _archive/legacy_wizard/
+# Use new modular architecture: src/frontend/wizard/
 from src.frontend.views.calendar_dashboard import CalendarDashboard
 from src.frontend.views.controller import CalendarController
 from src.common.icons import IconManager
@@ -580,7 +581,9 @@ class MainView(QMainWindow):
         self.dashboard_page = DashboardPage()
         self.pages = {
             "dashboard": self.dashboard_page,
-            "wizard": GuidedFormWizard(),
+            # Legacy GuidedFormWizard replaced by new modular architecture
+            # TODO: Integrate src/frontend/wizard/WizardView here
+            "wizard": QWidget(), # Placeholder for new WizardView
             "calendar": QWidget(), # Placeholder
             "tasks": QWidget(), # Placeholder
             "analytics": QWidget(), # Placeholder

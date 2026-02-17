@@ -11,7 +11,6 @@ from PySide6.QtCore import QDate, QObject, Qt
 from qasync import asyncSlot
 
 from src.frontend.views.calendar_dashboard import CalendarDashboard
-from src.frontend.views.wizard_view import GuidedFormWizard
 
 if TYPE_CHECKING:
     from src.frontend.views.main_view import MainView
@@ -27,18 +26,20 @@ class CalendarController(QObject):
       do método Python.
     3. Introspecção: Permite que o sistema de Meta-Objetos do Qt identifique
     o método corretamente.
+
+    NOTA: GuidedFormWizard (legacy) foi removido. Usar nova arquitetura em
+    src/frontend/wizard/ com WizardView, FormViewModel, etc.
     """
 
     def __init__(
             self, calendar: CalendarDashboard,
-            wizard: GuidedFormWizard,
-            main_view: "MainView"
+            wizard: "QObject | None" = None,
+            main_view: "MainView | None" = None
             ) -> None:
         super().__init__()
         self._calendar: CalendarDashboard = calendar
-        self._wizard: GuidedFormWizard = wizard
-        self._main_view: "MainView" = main_view
-
+        self._wizard: QObject | None = wizard
+        self._main_view: "MainView | None" = main_view
 
         # Conecta o sinal do calendário ao slot do controller usando QueuedConnection
         # Isso garante que o evento seja processado no próximo ciclo do event loop,
@@ -53,11 +54,13 @@ class CalendarController(QObject):
         """
         Processa a data selecionada de forma assíncrona.
         O uso de @asyncSlot aqui permite coordenar múltiplas tarefas assíncronas.
-        """
-        # 1. Solicita à MainView para mudar para a página do wizard imediatamente
-        # para dar feedback instantâneo de navegação ao utilizador.
-        self._main_view._on_page_changed("wizard")
 
-        # 2. Chama o carregamento de dados no wizard
-        # CORRIGIDO: set_selected_date agora é síncrono e cria task internamente
-        self._wizard.set_selected_date(date)
+        NOTA: Código relativo ao wizard foi comentado. A integração com o novo
+        wizard (src/frontend/wizard/) será feita em uma fase posterior.
+        """
+        # Legacy wizard integration commented out (archived code)
+        # if self._main_view:
+        #     self._main_view._on_page_changed("wizard")
+        # if self._wizard:
+        #     self._wizard.set_selected_date(date)
+        pass
