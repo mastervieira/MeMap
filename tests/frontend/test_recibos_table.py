@@ -28,7 +28,7 @@ from src.common.constants import (
 )
 from src.common.constants.table_constants import TOTAL_ROW_LABEL
 from src.frontend.components.partilhado_widget import PartilhadoWidget
-from src.frontend.views.recibos_table import RecibosTableWidget
+from src.frontend.components.recibos_table import RecibosTableWidget
 
 
 @pytest.fixture

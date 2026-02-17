@@ -3,7 +3,7 @@ Main View da aplicação com sidebar, navbar e footer.
 Implementa a arquitetura principal da interface com nova estrutura de grids.
 """
 
-from PySide6.QtCore import  QSize, Signal, Slot
+from PySide6.QtCore import QSize, Signal, Slot
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -17,27 +17,44 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from sqlalchemy.orm.session import Session
 
 from common.themes.colors import ColorPalette
-from src.common.themes import Theme, ThemeManager
-from src.frontend.styles.styles import StyleManager
-from src.frontend.styles.component_styles import (
-    SidebarStyles,
-    FooterStyles,
-    DashboardPageStyles,
-)
-# Legacy GuidedFormWizard removed - see _archive/legacy_wizard/
-# Use new modular architecture: src/frontend/wizard/
-from src.frontend.views.calendar_dashboard import CalendarDashboard
-from src.frontend.views.controller import CalendarController
 from src.common.icons import IconManager
-from src.frontend.viewmodels import MainViewModel
+from src.common.themes import Theme, ThemeManager
+from src.db.session_manager import SessionManager
+from src.frontend.styles.component_styles import (
+    DashboardPageStyles,
+    FooterStyles,
+    SidebarStyles,
+)
+from src.frontend.styles.styles import StyleManager
+from src.frontend.viewmodels import CalendarViewModel, MainViewModel
+
+# Nova arquitetura modular do Wizard
+from src.frontend.wizard.services import (
+    CalculationService,
+    DataService,
+    ExportService,
+    ValidationService,
+)
+from src.frontend.wizard.viewmodels import FormViewModel, TableViewModel, WizardCoordinator
+from src.frontend.wizard.viewmodels import CalendarViewModel as WizardCalendarViewModel
+from src.frontend.wizard.views import CalendarView as WizardCalendarView
+from src.frontend.wizard.views import FormView, TableView, WizardView
+from src.frontend.components.calendar_dashboard import CalendarDashboard
+from src.frontend.components.calendar_controller import CalendarController
+from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
 
 
 class SidebarButton(QPushButton):
     """Botão customizado para o sidebar."""
 
-    def __init__(self, text: str, icon: str = "", parent=None) -> None:
+    def __init__(
+            self, text: str,
+            icon: str = "",
+            parent: QWidget | None = None
+            ) -> None:
         super().__init__(text, parent)
         self.setProperty("sidebar_button", True)
         # setCursor removido - usa stylesheet para cursor pointer
@@ -50,7 +67,7 @@ class Sidebar(QFrame):
     # Sinais
     page_changed = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("sidebar")
         self.setMinimumWidth(240)
@@ -130,9 +147,9 @@ class Sidebar(QFrame):
         self.btn_analytics.setIcon(self.icon_manager.analytics())
         self.btn_settings.setIcon(self.icon_manager.settings())
 
-    def set_active_page(self, page_name: str):
+    def set_active_page(self, page_name: str) -> None:
         """Define a página ativa no sidebar."""
-        buttons = {
+        buttons: dict[str, SidebarButton] = {
             "dashboard": self.btn_dashboard,
             "wizard": self.btn_wizard,
             "calendar": self.btn_calendar,
@@ -142,13 +159,13 @@ class Sidebar(QFrame):
         }
 
         for name, button in buttons.items():
-            is_active = name == page_name
+            is_active: bool = name == page_name
             button.setProperty("active", is_active)
             button.style().unpolish(button)
             button.style().polish(button)
             button.update()
 
-    def _on_page_changed(self, page_name: str):
+    def _on_page_changed(self, page_name: str) -> None:
         """Callback quando a página é alterada."""
         self.set_active_page(page_name)
         self.page_changed.emit(page_name)
@@ -160,10 +177,14 @@ class Navbar(QFrame):
     # Sinal emitido quando botão de tema é clicado
     theme_toggle_requested = Signal()
 
-    def __init__(self, theme_manager: ThemeManager, parent=None):
+    def __init__(
+            self,
+            theme_manager: ThemeManager,
+            parent: QWidget | None = None
+            ) -> None:
         super().__init__(parent)
         self.setObjectName("navbar")
-        self._theme_manager = theme_manager
+        self._theme_manager: ThemeManager = theme_manager
         self.icon_manager = IconManager()
 
         self.main_layout = QHBoxLayout(self)
@@ -177,7 +198,9 @@ class Navbar(QFrame):
 
         # Espaço flexível
         spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        spacer.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Preferred)
 
         # Botão de toggle de tema com ícone
         self.theme_toggle_btn = QPushButton()
@@ -235,7 +258,7 @@ class Navbar(QFrame):
 
     def _update_theme_button(self) -> None:
         """Atualiza o ícone do botão baseado no tema atual."""
-        current_theme = self._theme_manager.current_theme
+        current_theme: Theme = self._theme_manager.current_theme
         if current_theme == Theme.DARK:
             # Em dark mode, mostra sol (para mudar para light)
             self.theme_toggle_btn.setIcon(self.icon_manager.sun())
@@ -245,11 +268,11 @@ class Navbar(QFrame):
             self.theme_toggle_btn.setIcon(self.icon_manager.moon())
             self.theme_toggle_btn.setToolTip("Mudar para tema escuro")
 
-    def set_page_title(self, title: str):
+    def set_page_title(self, title: str) -> None:
         """Atualiza o título da página."""
         self.page_title.setText(title)
 
-    def set_status(self, status: str):
+    def set_status(self, status: str) -> None:
         """Atualiza o status da aplicação."""
         self.status_label.setText(status)
 
@@ -257,7 +280,7 @@ class Navbar(QFrame):
 class Footer(QFrame):
     """Footer da aplicação."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setObjectName("footer")
 
@@ -272,7 +295,8 @@ class Footer(QFrame):
 
         # Espaço flexível
         spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        spacer.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         # Container de Progresso
         self.progress_widget = QWidget()
@@ -281,7 +305,8 @@ class Footer(QFrame):
         self.progress_layout.setSpacing(10)
 
         self.progress_label = QLabel("A processar...")
-        self.progress_label.setStyleSheet("font-size: 11px; color: #888; font-style: italic;")
+        self.progress_label.setStyleSheet(
+            "font-size: 11px; color: #888; font-style: italic;")
         self.progress_label.hide()
 
         # Progresso geral
@@ -303,7 +328,7 @@ class Footer(QFrame):
         self.main_layout.addWidget(spacer)
         self.main_layout.addWidget(self.progress_widget)
 
-    def set_progress(self, value: int, message: str = "A carregar..."):
+    def set_progress(self, value: int, message: str = "A carregar...") -> None:
         """Atualiza o progresso global e visibilidade."""
         from PySide6.QtCore import QTimer
 
@@ -320,7 +345,7 @@ class Footer(QFrame):
         else:
             self._hide_progress()
 
-    def _hide_progress(self):
+    def _hide_progress(self) -> None:
         """Esconde os widgets de progresso."""
         self.progress_label.hide()
         self.global_progress.hide()
@@ -333,7 +358,7 @@ class DashboardPage(QWidget):
     # Sinal para solicitar mudança de página
     request_page_change = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Theme manager
@@ -349,14 +374,14 @@ class DashboardPage(QWidget):
 
         # Descrição
         self.description = QLabel(
-            "Bem-vindo ao MeMap Pro! Sistema de gerenciamento com interface moderna."
+            "Bem-vindo ao MeMap Pro!"
         )
 
         # Grid Superior
-        self.upper_grid = self.create_upper_grid()
+        self.upper_grid: QFrame = self.create_upper_grid()
 
         # Grid Inferior - Calendário
-        self.lower_grid = self.create_lower_grid()
+        self.lower_grid: QFrame = self.create_lower_grid()
 
         # Adiciona widgets ao layout principal
         self.main_layout.addWidget(self.title)
@@ -370,7 +395,7 @@ class DashboardPage(QWidget):
 
     def _apply_theme(self) -> None:
         """Aplica o tema atual aos componentes do dashboard."""
-        palette = self.theme_manager.current_palette
+        palette: ColorPalette = self.theme_manager.current_palette
 
         # Atualiza título e descrição
         self.title.setStyleSheet(DashboardPageStyles.get_title_style())
@@ -441,11 +466,11 @@ class DashboardPage(QWidget):
             }}
         """)
 
-    def create_upper_grid(self):
+    def create_upper_grid(self) -> QFrame:
         """Cria a grid superior com 3 colunas."""
         self.upper_grid_frame = QFrame()
         self.upper_grid_frame.setObjectName("upper_grid")
-        grid_container = self.upper_grid_frame
+        grid_container: QFrame = self.upper_grid_frame
 
         grid_layout = QGridLayout(grid_container)
         grid_layout.setSpacing(0)
@@ -454,7 +479,7 @@ class DashboardPage(QWidget):
         # ===== COLUNA 1: Botões =====
         self.column1_frame = QFrame()
         self.column1_frame.setObjectName("column_1")
-        column1_frame = self.column1_frame
+        column1_frame: QFrame = self.column1_frame
 
         column1_layout = QVBoxLayout(column1_frame)
         column1_layout.setSpacing(8)
@@ -484,7 +509,7 @@ class DashboardPage(QWidget):
         # ===== COLUNAS 2 e 3: Coladas com divisor =====
         self.columns_23_frame = QFrame()
         self.columns_23_frame.setObjectName("columns_23")
-        columns_23_frame = self.columns_23_frame
+        columns_23_frame: QFrame = self.columns_23_frame
 
         columns_23_layout = QHBoxLayout(columns_23_frame)
         columns_23_layout.setSpacing(0)
@@ -501,12 +526,12 @@ class DashboardPage(QWidget):
         # Divisor
         self.divider = QFrame()
         self.divider.setFixedWidth(2)
-        divider = self.divider
+        divider: QFrame = self.divider
 
         # Coluna 3: Gráfico
         self.column3_frame = QFrame()
         self.column3_frame.setObjectName("column_3")
-        column3_frame = self.column3_frame
+        column3_frame: QFrame = self.column3_frame
         column3_layout = QVBoxLayout(column3_frame)
         column3_layout.addWidget(QLabel("Gráfico"))
         column3_layout.addStretch()
@@ -521,11 +546,11 @@ class DashboardPage(QWidget):
 
         return grid_container
 
-    def create_lower_grid(self):
+    def create_lower_grid(self) -> QFrame:
         """Cria a grid inferior com calendário."""
         self.lower_grid_frame = QFrame()
         self.lower_grid_frame.setObjectName("lower_grid")
-        grid_container = self.lower_grid_frame
+        grid_container: QFrame = self.lower_grid_frame
 
         layout = QVBoxLayout(grid_container)
         self.calendar_dashboard = CalendarDashboard()
@@ -538,18 +563,21 @@ class DashboardPage(QWidget):
 class MainView(QMainWindow):
     """View principal da aplicação."""
 
-    def __init__(self, viewmodel: MainViewModel | None = None, parent=None):
+    def __init__(
+            self, viewmodel: MainViewModel | None = None,
+            parent: QWidget | None = None
+            ) -> None:
         super().__init__(parent)
 
         self.setWindowTitle("MeMap Pro - PySide6 + qasync")
         self.showMaximized()
 
         # Dependency Injection - ViewModel
-        self._viewmodel = viewmodel or MainViewModel()
+        self._viewmodel: MainViewModel = viewmodel or MainViewModel()
 
         # Inicializa gerenciadores
         self.style_manager = StyleManager()
-        self._theme_manager = self._viewmodel.get_theme_manager()
+        self._theme_manager: ThemeManager = self._viewmodel.get_theme_manager()
 
         # Aplica tema inicial
         self._apply_theme()
@@ -577,17 +605,38 @@ class MainView(QMainWindow):
         self.content_area = QStackedWidget()
         self.content_area.setObjectName("main_content")
 
+        # Repositório partilhado (Dashboard CalendarViewModel + Wizard services)
+        session: Session = SessionManager.get_instance().get_session()
+        repository = TabelaTaxasRepository(session)
+
+        # CalendarViewModel para o Dashboard
+        self.calendar_viewmodel = CalendarViewModel(repository)
+
+        # Instanciar novo WizardView modular
+        _validation_svc = ValidationService(repository)
+        _calculation_svc = CalculationService()
+        _export_svc = ExportService()
+        _data_svc = DataService(repository)
+        _form_vm = FormViewModel(_data_svc, _validation_svc)
+        _table_vm = TableViewModel(_calculation_svc)
+        _wizard_calendar_vm = WizardCalendarViewModel(_validation_svc, _export_svc)
+        _coordinator = WizardCoordinator(_form_vm, _table_vm, _wizard_calendar_vm)
+        _form_view = FormView(_form_vm)
+        _table_view = TableView(_table_vm)
+        _wizard_calendar_view = WizardCalendarView(_wizard_calendar_vm)
+        self.wizard_view = WizardView(
+            _coordinator, _form_view, _table_view, _wizard_calendar_view
+        )
+
         # Páginas
         self.dashboard_page = DashboardPage()
-        self.pages = {
+        self.pages: dict[str, QWidget] = {
             "dashboard": self.dashboard_page,
-            # Legacy GuidedFormWizard replaced by new modular architecture
-            # TODO: Integrate src/frontend/wizard/WizardView here
-            "wizard": QWidget(), # Placeholder for new WizardView
-            "calendar": QWidget(), # Placeholder
-            "tasks": QWidget(), # Placeholder
-            "analytics": QWidget(), # Placeholder
-            "settings": QWidget(), # Placeholder
+            "wizard": self.wizard_view,
+            "calendar": QWidget(),
+            "tasks": QWidget(),
+            "analytics": QWidget(),
+            "settings": QWidget(),
         }
 
         # Adiciona páginas ao stacked widget
@@ -604,39 +653,16 @@ class MainView(QMainWindow):
 
         self.setCentralWidget(self.main_container)
 
-        # FASE 3.3: Criar CalendarViewModel compartilhado e conectar signals
-        from src.db.session_manager import SessionManager
-        from src.repositories.tabela_taxas_repository import TabelaTaxasRepository
-        from src.frontend.viewmodels import CalendarViewModel
-
-        session = SessionManager.get_instance().get_session()
-        repository = TabelaTaxasRepository(session)
-        self.calendar_viewmodel = CalendarViewModel(repository)
-
         # Injetar ViewModel no CalendarDashboard
         self.dashboard_page.calendar_dashboard._viewmodel = self.calendar_viewmodel
         self.dashboard_page.calendar_dashboard.calendar._viewmodel = self.calendar_viewmodel
 
-        # Conectar signal day_saved do Wizard ao Calendar
-        self.pages["wizard"]._viewmodel.day_saved.connect(
-            lambda date, success: self.calendar_viewmodel.mark_day_saved(date) if success else self.calendar_viewmodel.mark_day_deleted(date)
-        )
-
-        # Conectar signal data_modified do Wizard ao Calendar
-        self.pages["wizard"]._viewmodel.data_modified.connect(
-            lambda has_changes: self._on_wizard_data_modified(has_changes)
-        )
-
-        # Inicializa o Controller para mediar Calendário -> Wizard
+        # Controller: mediar calendário → wizard
         self.calendar_controller = CalendarController(
             self.dashboard_page.calendar_dashboard,
-            self.pages["wizard"],
+            None,
             self
         )
-
-        # Conecta o progresso do Wizard ao Footer
-        self.pages["wizard"].loading_progress.connect(self.footer.set_progress)
-        self.pages["wizard"]._viewmodel.saving_progress.connect(self.footer.set_progress)
 
         # Conecta sinais
         self._connect_signals()
@@ -646,21 +672,7 @@ class MainView(QMainWindow):
         # Aplica stylesheet principal
         self.setStyleSheet(self.style_manager.get_main_stylesheet())
 
-    def _on_wizard_data_modified(self, has_changes: bool) -> None:
-        """Callback quando dados do Wizard são modificados.
-
-        FASE 3.3: Marca dia como modificado no calendário se há mudanças.
-
-        Args:
-            has_changes: Se há mudanças não salvas
-        """
-        if has_changes:
-            # Obter data selecionada do Wizard
-            wizard = self.pages["wizard"]
-            if hasattr(wizard, "_selected_date") and wizard._selected_date:
-                self.calendar_viewmodel.mark_day_modified(wizard._selected_date)
-
-    def _connect_signals(self):
+    def _connect_signals(self) -> None:
         """Conecta os sinais da interface."""
         # Conecta UI -> ViewModel (delegação)
         self.sidebar.page_changed.connect(self._on_page_changed)
@@ -672,16 +684,16 @@ class MainView(QMainWindow):
         self._viewmodel.theme_changed.connect(self._on_viewmodel_theme_changed)
 
     @Slot(str)
-    def _on_page_changed(self, page_name: str):
+    def _on_page_changed(self, page_name: str) -> None:
         """Delega navegação ao ViewModel."""
         self._viewmodel.navigate_to(page_name)  # type: ignore
 
     @Slot(str)
-    def _on_viewmodel_page_changed(self, page_name: str):
+    def _on_viewmodel_page_changed(self, page_name: str) -> None:
         """Callback quando o ViewModel notifica mudança de página."""
-        titles = {
+        titles: dict[str, str] = {
             "dashboard": "Dashboard",
-            "wizard": "Formulário Guiado",
+            "wizard": "Formulário",
             "calendar": "Calendário",
             "tasks": "Tarefas",
             "analytics": "Análises",
@@ -693,12 +705,12 @@ class MainView(QMainWindow):
         self.content_area.setCurrentWidget(self.pages[page_name])
 
     @Slot()
-    def _on_theme_toggle_requested(self):
+    def _on_theme_toggle_requested(self) -> None:
         """Delega mudança de tema ao ViewModel."""
         self._viewmodel.toggle_theme()
 
     @Slot(object)
-    def _on_viewmodel_theme_changed(self, theme: Theme):
+    def _on_viewmodel_theme_changed(self, theme: Theme) -> None:
         """Callback quando o ViewModel notifica mudança de tema."""
         # Atualiza botão do navbar
         self.navbar._update_theme_button()

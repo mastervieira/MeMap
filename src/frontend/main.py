@@ -15,9 +15,9 @@ from PySide6.QtCore import Qt
 # Importa componentes da aplicação
 from PySide6.QtWidgets import QApplication
 
-from src.frontend.views.main_view import MainView
+from src.frontend.main_view import MainView
 from src.frontend.components.notifications import NotificationManager
-from src.frontend.views.notifications import StatusManager
+from src.frontend.components.app_notifications import StatusManager
 
 
 

@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QDate, QObject, Qt
 from qasync import asyncSlot
 
-from src.frontend.views.calendar_dashboard import CalendarDashboard
+from src.frontend.components.calendar_dashboard import CalendarDashboard
 
 if TYPE_CHECKING:
-    from src.frontend.views.main_view import MainView
+    from src.frontend.main_view import MainView
 
 
 class CalendarController(QObject):
@@ -53,14 +53,9 @@ class CalendarController(QObject):
     async def _on_date_selected(self, date: QDate) -> None:
         """
         Processa a data selecionada de forma assíncrona.
-        O uso de @asyncSlot aqui permite coordenar múltiplas tarefas assíncronas.
-
-        NOTA: Código relativo ao wizard foi comentado. A integração com o novo
-        wizard (src/frontend/wizard/) será feita em uma fase posterior.
+        Navega para a página do wizard quando um dia é clicado no calendário.
         """
-        # Legacy wizard integration commented out (archived code)
-        # if self._main_view:
-        #     self._main_view._on_page_changed("wizard")
-        # if self._wizard:
-        #     self._wizard.set_selected_date(date)
-        pass
+        if self._main_view:
+            self._main_view._on_page_changed("wizard")
+        # TODO: Após integrar o novo WizardView em main_view.py,
+        # passar a data selecionada para o wizard aqui.
